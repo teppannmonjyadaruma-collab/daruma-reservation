@@ -1,0 +1,512 @@
+"use client";
+
+import { useMemo, useState } from "react";
+
+type Course = "" | "席のみ" | "だるま満喫" | "鉄板満喫" | "特選だるま";
+type Drink = "" | "なし" | "90" | "120";
+type TeppanPref = "" | "鉄板あり" | "希望なし" | "指定不可";
+type Step = 1 | 2 | 3 | 4 | 5;
+
+type ReservationFormData = {
+  visitDate: string;
+  startTime: string;
+  adult: number;
+  child: number;
+  course: Course;
+  drink: Drink;
+  teppanPref: TeppanPref;
+  name: string;
+  kana: string;
+  phone: string;
+  note: string;
+};
+
+type CourseState = Record<Exclude<Course, "">, { disabled: boolean; reason: string }>;
+
+const initialFormData: ReservationFormData = {
+  visitDate: "",
+  startTime: "",
+  adult: 0,
+  child: 0,
+  course: "",
+  drink: "",
+  teppanPref: "",
+  name: "",
+  kana: "",
+  phone: "",
+  note: "",
+};
+
+const mockCalendarDays = [
+  { date: "2026-05-01", label: "5/1", status: "◎", disabled: false },
+  { date: "2026-05-02", label: "5/2", status: "△", disabled: false },
+  { date: "2026-05-03", label: "5/3", status: "△", disabled: false },
+  { date: "2026-05-04", label: "5/4", status: "◎", disabled: false },
+  { date: "2026-05-05", label: "5/5", status: "◎", disabled: false },
+  { date: "2026-05-06", label: "5/6", status: "休", disabled: true },
+  { date: "2026-05-07", label: "5/7", status: "×", disabled: true },
+];
+
+const mockLunchTimes = ["11:00", "11:15", "11:30", "12:00", "12:30", "13:00"];
+const mockDinnerTimes = ["17:00", "17:15", "18:00", "18:30", "19:00", "19:30"];
+
+function isLunchTime(startTime: string) {
+  return !!startTime && startTime < "17:00";
+}
+
+function getDrinkOptions(course: Course): Drink[] {
+  switch (course) {
+    case "席のみ":
+      return ["なし"];
+    case "だるま満喫":
+      return ["なし", "90"];
+    case "鉄板満喫":
+    case "特選だるま":
+      return ["なし", "120"];
+    default:
+      return [];
+  }
+}
+
+function getTeppanOptions(adult: number, child: number): TeppanPref[] {
+  const total = adult + child;
+  if (total >= 2 && total <= 4) {
+    return ["鉄板あり", "希望なし"];
+  }
+  return ["指定不可"];
+}
+
+function shouldSkipOptionStep(formData: ReservationFormData) {
+  const teppanOptions = getTeppanOptions(formData.adult, formData.child);
+  const drinkOptions = getDrinkOptions(formData.course);
+
+  const canChooseTeppan = !(teppanOptions.length === 1 && teppanOptions[0] === "指定不可");
+  const canChooseDrink = !(drinkOptions.length === 1 && drinkOptions[0] === "なし");
+
+  return !canChooseTeppan && !canChooseDrink;
+}
+
+function getCourseState(params: {
+  isLunch: boolean;
+  available120: boolean;
+  available150: boolean;
+}): CourseState {
+  const { isLunch, available120, available150 } = params;
+
+  if (isLunch) {
+    return {
+      "席のみ": { disabled: false, reason: "" },
+      "だるま満喫": { disabled: true, reason: "ディナーの時間帯のみ選択可能です" },
+      "鉄板満喫": { disabled: true, reason: "ディナーの時間帯のみ選択可能です" },
+      "特選だるま": { disabled: true, reason: "ディナーの時間帯のみ選択可能です" },
+    };
+  }
+
+  return {
+    "席のみ": { disabled: false, reason: "" },
+    "だるま満喫": {
+      disabled: !available120,
+      reason: !available120
+        ? "選択された時間帯ではこちらのコースはお席の都合上お選びいただけません。別のお時間帯をご選択ください"
+        : "",
+    },
+    "鉄板満喫": {
+      disabled: !available150,
+      reason: !available150
+        ? "選択された時間帯ではこちらのコースはお席の都合上お選びいただけません。別のお時間帯をご選択ください"
+        : "",
+    },
+    "特選だるま": {
+      disabled: !available150,
+      reason: !available150
+        ? "選択された時間帯ではこちらのコースはお席の都合上お選びいただけません。別のお時間帯をご選択ください"
+        : "",
+    },
+  };
+}
+
+function StepIndicator({ currentStep }: { currentStep: Step }) {
+  const steps = [1, 2, 3, 4, 5] as const;
+  return (
+    <div className="mb-6 flex items-center justify-center gap-2 text-sm font-bold text-white">
+      {steps.map((step) => (
+        <div key={step} className="flex items-center gap-2">
+          <div
+            className={`flex h-8 w-8 items-center justify-center rounded-full border ${
+              currentStep === step ? "border-yellow-300 bg-yellow-400 text-black" : "border-white/40 bg-black/30 text-white"
+            }`}
+          >
+            {step}
+          </div>
+          {step !== 5 && <div className="h-px w-6 bg-white/30" />}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function Step1DateGuestsTime({
+  formData,
+  setFormData,
+}: {
+  formData: ReservationFormData;
+  setFormData: React.Dispatch<React.SetStateAction<ReservationFormData>>;
+}) {
+  const displayTimes = formData.startTime
+    ? isLunchTime(formData.startTime)
+      ? mockLunchTimes
+      : mockDinnerTimes
+    : [...mockLunchTimes, ...mockDinnerTimes];
+
+  return (
+    <div className="space-y-8">
+      <section>
+        <h2 className="mb-3 text-xl font-black text-yellow-300">ステップ1 来店日を選ぶ</h2>
+        <div className="grid grid-cols-4 gap-2 rounded-2xl bg-black/25 p-3 md:grid-cols-7">
+          {mockCalendarDays.map((day) => (
+            <button
+              key={day.date}
+              type="button"
+              disabled={day.disabled}
+              onClick={() => setFormData((prev) => ({ ...prev, visitDate: day.date }))}
+              className={`rounded-xl border px-2 py-3 text-center transition ${
+                formData.visitDate === day.date ? "border-yellow-300 bg-yellow-400 text-black" : "border-white/20 bg-white/5 text-white"
+              } ${day.disabled ? "cursor-not-allowed opacity-40" : "hover:bg-white/10"}`}
+            >
+              <div className="text-sm font-bold">{day.label}</div>
+              <div className="mt-1 text-xs">{day.status}</div>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <h2 className="mb-3 text-xl font-black text-yellow-300">ステップ2 人数を選ぶ</h2>
+        <div className="grid gap-4 md:grid-cols-2">
+          <div>
+            <label className="mb-2 block text-sm font-bold text-white">大人</label>
+            <select
+              value={formData.adult}
+              onChange={(e) => setFormData((prev) => ({ ...prev, adult: Number(e.target.value) }))}
+              className="w-full rounded-xl border border-yellow-600 bg-white px-4 py-3 text-black"
+            >
+              {Array.from({ length: 25 }, (_, i) => i).map((n) => (
+                <option key={n} value={n}>
+                  {n}名
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="mb-2 block text-sm font-bold text-white">子供</label>
+            <select
+              value={formData.child}
+              onChange={(e) => setFormData((prev) => ({ ...prev, child: Number(e.target.value) }))}
+              className="w-full rounded-xl border border-yellow-600 bg-white px-4 py-3 text-black"
+            >
+              {Array.from({ length: 11 }, (_, i) => i).map((n) => (
+                <option key={n} value={n}>
+                  {n}名
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2 className="mb-3 text-xl font-black text-yellow-300">ステップ3 時間帯を選ぶ</h2>
+        <div className="flex flex-wrap gap-2 rounded-2xl bg-black/25 p-3">
+          {displayTimes.map((time) => (
+            <button
+              key={time}
+              type="button"
+              onClick={() => setFormData((prev) => ({ ...prev, startTime: time }))}
+              className={`rounded-full border px-4 py-2 text-sm font-bold transition ${
+                formData.startTime === time ? "border-yellow-300 bg-yellow-400 text-black" : "border-white/20 bg-white/5 text-white hover:bg-white/10"
+              }`}
+            >
+              {time}
+            </button>
+          ))}
+        </div>
+        <p className="mt-2 text-sm text-white/75">ランチは90分枠、ディナーは120分枠の席のみ予約が可能な時間帯だけを表示する想定です。</p>
+      </section>
+    </div>
+  );
+}
+
+function Step2Course({
+  formData,
+  setFormData,
+}: {
+  formData: ReservationFormData;
+  setFormData: React.Dispatch<React.SetStateAction<ReservationFormData>>;
+}) {
+  const isLunch = isLunchTime(formData.startTime);
+  const courseState = getCourseState({
+    isLunch,
+    available120: true,
+    available150: false,
+  });
+
+  const cards: Exclude<Course, "">[] = ["席のみ", "だるま満喫", "鉄板満喫", "特選だるま"];
+
+  return (
+    <div>
+      <h2 className="mb-4 text-xl font-black text-yellow-300">ステップ4 コースを選ぶ</h2>
+      <div className="grid gap-4 md:grid-cols-2">
+        {cards.map((course) => {
+          const state = courseState[course];
+          return (
+            <div
+              key={course}
+              className={`rounded-2xl border p-4 ${state.disabled ? "border-white/10 bg-white/5 opacity-60" : "border-yellow-500 bg-black/25"}`}
+            >
+              <div className="mb-3 text-lg font-black text-white">{course}</div>
+              <div className="mb-4 text-sm text-white/75">{course === "席のみ" ? "お席のみのご予約です。" : "コース詳細ページへ遷移する導線を後で追加予定。"}</div>
+              {state.reason && <p className="mb-3 text-xs text-yellow-200">{state.reason}</p>}
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  disabled={state.disabled}
+                  onClick={() => setFormData((prev) => ({ ...prev, course, drink: "", teppanPref: "" }))}
+                  className={`rounded-xl px-4 py-2 text-sm font-bold ${
+                    state.disabled ? "bg-white/10 text-white/60" : formData.course === course ? "bg-yellow-400 text-black" : "bg-white text-black"
+                  }`}
+                >
+                  このコースを選ぶ
+                </button>
+                {course !== "席のみ" && (
+                  <button type="button" className="rounded-xl border border-white/20 px-4 py-2 text-sm font-bold text-white">
+                    詳細を見る
+                  </button>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function Step3Options({
+  formData,
+  setFormData,
+}: {
+  formData: ReservationFormData;
+  setFormData: React.Dispatch<React.SetStateAction<ReservationFormData>>;
+}) {
+  const drinkOptions = getDrinkOptions(formData.course);
+  const teppanOptions = getTeppanOptions(formData.adult, formData.child);
+  const showDrink = !(drinkOptions.length === 1 && drinkOptions[0] === "なし");
+  const showTeppan = !(teppanOptions.length === 1 && teppanOptions[0] === "指定不可");
+
+  return (
+    <div className="space-y-8">
+      <h2 className="text-xl font-black text-yellow-300">ステップ5 オプションを選ぶ</h2>
+
+      {showDrink && (
+        <section>
+          <h3 className="mb-3 text-lg font-bold text-white">飲み放題</h3>
+          <div className="flex flex-wrap gap-2">
+            {drinkOptions.map((option) => (
+              <button
+                key={option}
+                type="button"
+                onClick={() => setFormData((prev) => ({ ...prev, drink: option }))}
+                className={`rounded-full border px-4 py-2 text-sm font-bold ${
+                  formData.drink === option ? "border-yellow-300 bg-yellow-400 text-black" : "border-white/20 bg-white/5 text-white"
+                }`}
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {showTeppan && (
+        <section>
+          <h3 className="mb-3 text-lg font-bold text-white">鉄板希望</h3>
+          <div className="flex flex-wrap gap-2">
+            {teppanOptions.map((option) => (
+              <button
+                key={option}
+                type="button"
+                onClick={() => setFormData((prev) => ({ ...prev, teppanPref: option }))}
+                className={`rounded-full border px-4 py-2 text-sm font-bold ${
+                  formData.teppanPref === option ? "border-yellow-300 bg-yellow-400 text-black" : "border-white/20 bg-white/5 text-white"
+                }`}
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
+    </div>
+  );
+}
+
+function Step4CustomerInfo({
+  formData,
+  setFormData,
+}: {
+  formData: ReservationFormData;
+  setFormData: React.Dispatch<React.SetStateAction<ReservationFormData>>;
+}) {
+  const update = (key: keyof ReservationFormData, value: string) => {
+    setFormData((prev) => ({ ...prev, [key]: value }));
+  };
+
+  return (
+    <div className="space-y-5">
+      <h2 className="text-xl font-black text-yellow-300">ステップ6 お客様情報を入力</h2>
+      <input value={formData.name} onChange={(e) => update("name", e.target.value)} placeholder="氏名" className="w-full rounded-xl border border-yellow-600 bg-white px-4 py-3 text-black" />
+      <input value={formData.kana} onChange={(e) => update("kana", e.target.value)} placeholder="フリガナ" className="w-full rounded-xl border border-yellow-600 bg-white px-4 py-3 text-black" />
+      <input value={formData.phone} onChange={(e) => update("phone", e.target.value)} placeholder="電話番号" className="w-full rounded-xl border border-yellow-600 bg-white px-4 py-3 text-black" />
+      <textarea value={formData.note} onChange={(e) => update("note", e.target.value)} placeholder="備考" rows={4} className="w-full rounded-xl border border-yellow-600 bg-white px-4 py-3 text-black" />
+    </div>
+  );
+}
+
+function Step5Confirm({ formData }: { formData: ReservationFormData }) {
+  return (
+    <div className="space-y-4">
+      <h2 className="text-xl font-black text-yellow-300">ステップ7 内容確認</h2>
+      <div className="rounded-2xl border border-yellow-500 bg-black/25 p-4 text-white">
+        <dl className="grid gap-2 md:grid-cols-2">
+          <div><dt className="text-sm text-white/65">来店日</dt><dd>{formData.visitDate}</dd></div>
+          <div><dt className="text-sm text-white/65">開始時間</dt><dd>{formData.startTime}</dd></div>
+          <div><dt className="text-sm text-white/65">人数</dt><dd>大人 {formData.adult} / 子供 {formData.child}</dd></div>
+          <div><dt className="text-sm text-white/65">コース</dt><dd>{formData.course}</dd></div>
+          <div><dt className="text-sm text-white/65">飲み放題</dt><dd>{formData.drink}</dd></div>
+          <div><dt className="text-sm text-white/65">鉄板希望</dt><dd>{formData.teppanPref}</dd></div>
+          <div><dt className="text-sm text-white/65">氏名</dt><dd>{formData.name}</dd></div>
+          <div><dt className="text-sm text-white/65">フリガナ</dt><dd>{formData.kana}</dd></div>
+          <div><dt className="text-sm text-white/65">電話番号</dt><dd>{formData.phone}</dd></div>
+          <div className="md:col-span-2"><dt className="text-sm text-white/65">備考</dt><dd>{formData.note || "なし"}</dd></div>
+        </dl>
+      </div>
+      <button type="button" className="w-full rounded-2xl bg-yellow-400 px-6 py-4 text-lg font-black text-black">
+        送信する
+      </button>
+    </div>
+  );
+}
+
+export default function ReservationForm() {
+  const [currentStep, setCurrentStep] = useState<Step>(1);
+  const [formData, setFormData] = useState<ReservationFormData>(initialFormData);
+  const [error, setError] = useState("");
+
+  const totalGuests = formData.adult + formData.child;
+  const skipOptionStep = useMemo(() => shouldSkipOptionStep(formData), [formData]);
+
+  const normalizeBeforeNext = () => {
+    if (formData.course) {
+      const drinkOptions = getDrinkOptions(formData.course);
+      const teppanOptions = getTeppanOptions(formData.adult, formData.child);
+
+      setFormData((prev) => ({
+        ...prev,
+        drink: drinkOptions.includes(prev.drink) ? prev.drink : drinkOptions[0] ?? "",
+        teppanPref: teppanOptions.includes(prev.teppanPref) ? prev.teppanPref : teppanOptions[0] ?? "",
+      }));
+    }
+  };
+
+  const handleNext = () => {
+    setError("");
+
+    if (currentStep === 1) {
+      if (!formData.visitDate) return setError("来店日を選択してください。");
+      if (totalGuests <= 0) return setError("人数を選択してください。");
+      if (!formData.startTime) return setError("時間帯を選択してください。");
+      setCurrentStep(2);
+      return;
+    }
+
+    if (currentStep === 2) {
+      if (!formData.course) return setError("コースを選択してください。");
+      normalizeBeforeNext();
+      setCurrentStep(skipOptionStep ? 4 : 3);
+      return;
+    }
+
+    if (currentStep === 3) {
+      const drinkOptions = getDrinkOptions(formData.course);
+      const teppanOptions = getTeppanOptions(formData.adult, formData.child);
+
+      if (drinkOptions.length > 1 && !formData.drink) return setError("飲み放題を選択してください。");
+      if (!(teppanOptions.length === 1 && teppanOptions[0] === "指定不可") && !formData.teppanPref) {
+        return setError("鉄板希望を選択してください。");
+      }
+      setCurrentStep(4);
+      return;
+    }
+
+    if (currentStep === 4) {
+      if (!formData.name.trim()) return setError("氏名を入力してください。");
+      if (!formData.kana.trim()) return setError("フリガナを入力してください。");
+      if (!formData.phone.trim()) return setError("電話番号を入力してください。");
+      setCurrentStep(5);
+    }
+  };
+
+  const handleBack = () => {
+    setError("");
+
+    if (currentStep === 5) {
+      setCurrentStep(4);
+      return;
+    }
+    if (currentStep === 4) {
+      setCurrentStep(skipOptionStep ? 2 : 3);
+      return;
+    }
+    if (currentStep === 3) {
+      setCurrentStep(2);
+      return;
+    }
+    if (currentStep === 2) {
+      setCurrentStep(1);
+    }
+  };
+
+  return (
+    <div className="mx-auto w-full max-w-3xl rounded-[28px] border border-yellow-500/40 bg-[#200000]/85 p-4 text-white shadow-2xl md:p-8">
+      <StepIndicator currentStep={currentStep} />
+
+      {currentStep === 1 && <Step1DateGuestsTime formData={formData} setFormData={setFormData} />}
+      {currentStep === 2 && <Step2Course formData={formData} setFormData={setFormData} />}
+      {currentStep === 3 && <Step3Options formData={formData} setFormData={setFormData} />}
+      {currentStep === 4 && <Step4CustomerInfo formData={formData} setFormData={setFormData} />}
+      {currentStep === 5 && <Step5Confirm formData={formData} />}
+
+      {error && <p className="mt-6 rounded-xl bg-red-950/70 px-4 py-3 text-sm font-bold text-red-200">{error}</p>}
+
+      <div className="mt-8 flex items-center justify-between gap-3">
+        <button
+          type="button"
+          onClick={handleBack}
+          disabled={currentStep === 1}
+          className="rounded-2xl border border-white/20 px-5 py-3 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          戻る
+        </button>
+        {currentStep !== 5 && (
+          <button
+            type="button"
+            onClick={handleNext}
+            className="rounded-2xl bg-yellow-400 px-6 py-3 text-sm font-black text-black"
+          >
+            次へ
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
