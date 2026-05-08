@@ -7,9 +7,11 @@ type Course = "" | "席のみ" | "だるま満喫" | "鉄板満喫" | "特選だ
 type Drink = "" | "なし" | "90" | "120";
 type TeppanPref = "" | "鉄板あり" | "希望なし" | "指定不可";
 type Step = 1 | 2 | 3 | 4 | 5;
+type VisitType = "" | "lunch" | "dinner";
 
 type ReservationFormData = {
     visitDate: string;
+    visitType: VisitType;
     startTime: string;
     adult: number;
     child: number;
@@ -28,6 +30,7 @@ const LIFF_ID = "2009798529-5aHrd2K7";
 
 const initialFormData: ReservationFormData = {
     visitDate: "",
+    visitType: "",
     startTime: "",
     adult: 0,
     child: 0,
@@ -154,11 +157,12 @@ function Step1DateGuestsTime({
     formData: ReservationFormData;
     setFormData: React.Dispatch<React.SetStateAction<ReservationFormData>>;
 }) {
-    const displayTimes = formData.startTime
-        ? isLunchTime(formData.startTime)
+    const displayTimes =
+        formData.visitType === "lunch"
             ? mockLunchTimes
-            : mockDinnerTimes
-        : [...mockLunchTimes, ...mockDinnerTimes];
+            : formData.visitType === "dinner"
+                ? mockDinnerTimes
+                : [];
 
     return (
         <div className="space-y-8">
@@ -170,8 +174,19 @@ function Step1DateGuestsTime({
                             key={day.date}
                             type="button"
                             disabled={day.disabled}
-                            onClick={() => setFormData((prev) => ({ ...prev, visitDate: day.date }))}
-                            className={`rounded-xl border px-2 py-3 text-center transition ${formData.visitDate === day.date ? "border-yellow-300 bg-yellow-400 text-black" : "border-white/20 bg-white/5 text-white"
+                            onClick={() =>
+                                setFormData((prev) => ({
+                                    ...prev,
+                                    visitDate: day.date,
+                                    startTime: "",
+                                    course: "",
+                                    drink: "",
+                                    teppanPref: "",
+                                }))
+                            }
+                            className={`rounded-xl border px-2 py-3 text-center transition ${formData.visitDate === day.date
+                                    ? "border-yellow-300 bg-yellow-400 text-black"
+                                    : "border-white/20 bg-white/5 text-white"
                                 } ${day.disabled ? "cursor-not-allowed opacity-40" : "hover:bg-white/10"}`}
                         >
                             <div className="text-sm font-bold">{day.label}</div>
@@ -188,7 +203,15 @@ function Step1DateGuestsTime({
                         <label className="mb-2 block text-sm font-bold text-white">大人</label>
                         <select
                             value={formData.adult}
-                            onChange={(e) => setFormData((prev) => ({ ...prev, adult: Number(e.target.value) }))}
+                            onChange={(e) =>
+                                setFormData((prev) => ({
+                                    ...prev,
+                                    adult: Number(e.target.value),
+                                    course: "",
+                                    drink: "",
+                                    teppanPref: "",
+                                }))
+                            }
                             className="w-full rounded-xl border border-yellow-600 bg-white px-4 py-3 text-black"
                         >
                             {Array.from({ length: 25 }, (_, i) => i).map((n) => (
@@ -202,7 +225,15 @@ function Step1DateGuestsTime({
                         <label className="mb-2 block text-sm font-bold text-white">子供</label>
                         <select
                             value={formData.child}
-                            onChange={(e) => setFormData((prev) => ({ ...prev, child: Number(e.target.value) }))}
+                            onChange={(e) =>
+                                setFormData((prev) => ({
+                                    ...prev,
+                                    child: Number(e.target.value),
+                                    course: "",
+                                    drink: "",
+                                    teppanPref: "",
+                                }))
+                            }
                             className="w-full rounded-xl border border-yellow-600 bg-white px-4 py-3 text-black"
                         >
                             {Array.from({ length: 11 }, (_, i) => i).map((n) => (
@@ -216,21 +247,93 @@ function Step1DateGuestsTime({
             </section>
 
             <section>
-                <h2 className="mb-3 text-xl font-black text-yellow-300">ステップ3 時間帯を選ぶ</h2>
-                <div className="flex flex-wrap gap-2 rounded-2xl bg-black/25 p-3">
-                    {displayTimes.map((time) => (
-                        <button
-                            key={time}
-                            type="button"
-                            onClick={() => setFormData((prev) => ({ ...prev, startTime: time }))}
-                            className={`rounded-full border px-4 py-2 text-sm font-bold transition ${formData.startTime === time ? "border-yellow-300 bg-yellow-400 text-black" : "border-white/20 bg-white/5 text-white hover:bg-white/10"
-                                }`}
-                        >
-                            {time}
-                        </button>
-                    ))}
+                <h2 className="mb-3 text-xl font-black text-yellow-300">ステップ3 ランチ / ディナーを選ぶ</h2>
+                <div className="grid grid-cols-2 gap-3">
+                    <button
+                        type="button"
+                        onClick={() =>
+                            setFormData((prev) => ({
+                                ...prev,
+                                visitType: "lunch",
+                                startTime: "",
+                                course: "",
+                                drink: "",
+                                teppanPref: "",
+                            }))
+                        }
+                        className={`rounded-2xl border px-4 py-4 text-base font-black transition ${formData.visitType === "lunch"
+                                ? "border-yellow-300 bg-yellow-400 text-black"
+                                : "border-white/20 bg-white/5 text-white hover:bg-white/10"
+                            }`}
+                    >
+                        ランチ
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={() =>
+                            setFormData((prev) => ({
+                                ...prev,
+                                visitType: "dinner",
+                                startTime: "",
+                                course: "",
+                                drink: "",
+                                teppanPref: "",
+                            }))
+                        }
+                        className={`rounded-2xl border px-4 py-4 text-base font-black transition ${formData.visitType === "dinner"
+                                ? "border-yellow-300 bg-yellow-400 text-black"
+                                : "border-white/20 bg-white/5 text-white hover:bg-white/10"
+                            }`}
+                    >
+                        ディナー
+                    </button>
                 </div>
-                <p className="mt-2 text-sm text-white/75">ランチは90分枠、ディナーは120分枠の席のみ予約が可能な時間帯だけを表示する想定です。</p>
+            </section>
+
+            <section>
+                <h2 className="mb-3 text-xl font-black text-yellow-300">ステップ4 時間帯を選ぶ</h2>
+
+                {!formData.visitType ? (
+                    <div className="rounded-2xl border border-white/10 bg-black/25 px-4 py-5 text-sm text-white/75">
+                        先にランチかディナーを選択してください。
+                    </div>
+                ) : (
+                    <div className="overflow-x-auto">
+                        <div className="flex min-w-max gap-2 rounded-2xl bg-black/25 p-3">
+                            {displayTimes.map((time) => (
+                                <button
+                                    key={time}
+                                    type="button"
+                                    onClick={() =>
+                                        setFormData((prev) => ({
+                                            ...prev,
+                                            startTime: time,
+                                            course: "",
+                                            drink: "",
+                                            teppanPref: "",
+                                        }))
+                                    }
+                                    className={`shrink-0 rounded-full border px-4 py-2 text-sm font-bold transition ${formData.startTime === time
+                                            ? "border-yellow-300 bg-yellow-400 text-black"
+                                            : "border-white/20 bg-white/5 text-white hover:bg-white/10"
+                                        }`}
+                                >
+                                    {time}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                <p className="mt-2 text-sm text-white/75">
+                    {formData.visitType === "lunch" &&
+                        "ランチは90分枠の席のみ予約が可能な時間帯を表示する想定です。"}
+                    {formData.visitType === "dinner" &&
+                        "ディナーは120分枠の席のみ予約が可能な時間帯を表示する想定です。"}
+                    {!formData.visitType &&
+                        "ランチまたはディナーを選ぶと、選択可能な時間帯が表示されます。"}
+                </p>
             </section>
         </div>
     );
@@ -243,7 +346,7 @@ function Step2Course({
     formData: ReservationFormData;
     setFormData: React.Dispatch<React.SetStateAction<ReservationFormData>>;
 }) {
-    const isLunch = isLunchTime(formData.startTime);
+    const isLunch = formData.visitType === "lunch";
     const courseState = getCourseState({
         isLunch,
         available120: true,
@@ -376,6 +479,7 @@ function Step5Confirm({ formData }: { formData: ReservationFormData }) {
             <div className="rounded-2xl border border-yellow-500 bg-black/25 p-4 text-white">
                 <dl className="grid gap-2 md:grid-cols-2">
                     <div><dt className="text-sm text-white/65">来店日</dt><dd>{formData.visitDate}</dd></div>
+                    <div><dt className="text-sm text-white/65">来店区分</dt><dd>{formData.visitType === "lunch" ? "ランチ" : formData.visitType === "dinner" ? "ディナー" : ""}</dd></div>
                     <div><dt className="text-sm text-white/65">開始時間</dt><dd>{formData.startTime}</dd></div>
                     <div><dt className="text-sm text-white/65">人数</dt><dd>大人 {formData.adult} / 子供 {formData.child}</dd></div>
                     <div><dt className="text-sm text-white/65">コース</dt><dd>{formData.course}</dd></div>
@@ -449,6 +553,7 @@ export default function ReservationForm() {
         if (currentStep === 1) {
             if (!formData.visitDate) return setError("来店日を選択してください。");
             if (totalGuests <= 0) return setError("人数を選択してください。");
+            if (!formData.visitType) return setError("ランチかディナーを選択してください。");
             if (!formData.startTime) return setError("時間帯を選択してください。");
             setCurrentStep(2);
             return;
