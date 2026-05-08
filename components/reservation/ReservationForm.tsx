@@ -27,6 +27,7 @@ type ReservationFormData = {
 type CalendarDay = {
     date: string;
     dayNumber: number;
+    weekday: number;
     status: "◎" | "△" | "×" | "休" | "";
     disabled: boolean;
     isCurrentMonth: boolean;
@@ -144,6 +145,7 @@ function buildMockCalendarDays(year: number, month: number): CalendarDay[] {
         days.push({
             date: "",
             dayNumber: 0,
+            weekday: -1,
             status: "",
             disabled: true,
             isCurrentMonth: false,
@@ -172,6 +174,7 @@ function buildMockCalendarDays(year: number, month: number): CalendarDay[] {
         days.push({
             date,
             dayNumber: day,
+            weekday,
             status,
             disabled,
             isCurrentMonth: true,
@@ -182,6 +185,7 @@ function buildMockCalendarDays(year: number, month: number): CalendarDay[] {
         days.push({
             date: "",
             dayNumber: 0,
+            weekday: -1,
             status: "",
             disabled: true,
             isCurrentMonth: false,
@@ -239,10 +243,21 @@ function Step1DateGuestsTime({
                         2026年5月
                     </div>
 
-                    <div className="mb-2 grid grid-cols-7 gap-2 text-center text-sm font-bold text-white/80">
-                        {weekLabels.map((label) => (
-                            <div key={label}>{label}</div>
-                        ))}
+                    <div className="mb-2 grid grid-cols-7 gap-2 text-center text-sm font-bold">
+                        {weekLabels.map((label, index) => {
+                            const colorClass =
+                                index === 0
+                                    ? "text-red-400"
+                                    : index === 6
+                                        ? "text-sky-300"
+                                        : "text-white/80";
+
+                            return (
+                                <div key={label} className={colorClass}>
+                                    {label}
+                                </div>
+                            );
+                        })}
                     </div>
 
                     <div className="grid grid-cols-7 gap-2">
@@ -252,6 +267,24 @@ function Step1DateGuestsTime({
                             }
 
                             const isSelected = formData.visitDate === day.date;
+
+                            const dayNumberColorClass =
+                                day.weekday === 0
+                                    ? "text-red-400"
+                                    : day.weekday === 6
+                                        ? "text-sky-300"
+                                        : "text-white";
+
+                            const statusColorClass =
+                                day.status === "◎"
+                                    ? "text-green-400"
+                                    : day.status === "△"
+                                        ? "text-yellow-300"
+                                        : day.status === "×"
+                                            ? "text-white/75"
+                                            : day.status === "休"
+                                                ? "text-red-300"
+                                                : "text-white/70";
 
                             return (
                                 <button
@@ -269,12 +302,22 @@ function Step1DateGuestsTime({
                                         }))
                                     }
                                     className={`aspect-square rounded-xl border p-1 text-center transition ${isSelected
-                                            ? "border-yellow-300 bg-yellow-400 text-black"
-                                            : "border-white/20 bg-white/5 text-white"
+                                        ? "border-yellow-300 bg-yellow-400 text-black"
+                                        : "border-white/20 bg-white/5 text-white"
                                         } ${day.disabled ? "cursor-not-allowed opacity-40" : "hover:bg-white/10"}`}
                                 >
-                                    <div className="mt-1 text-sm font-black md:text-base">{day.dayNumber}</div>
-                                    <div className="mt-1 text-[11px] font-bold md:text-xs">{day.status}</div>
+                                    <div
+                                        className={`mt-1 text-sm font-black md:text-base ${isSelected ? "text-black" : dayNumberColorClass
+                                            }`}
+                                    >
+                                        {day.dayNumber}
+                                    </div>
+                                    <div
+                                        className={`mt-1 text-[11px] font-bold md:text-xs ${isSelected ? "text-black/80" : statusColorClass
+                                            }`}
+                                    >
+                                        {day.status}
+                                    </div>
                                 </button>
                             );
                         })}
