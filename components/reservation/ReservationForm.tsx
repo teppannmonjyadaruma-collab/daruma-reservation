@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import liff from "@line/liff";
+import { fetchCalendarStatus, type CalendarStatusMap } from "@/lib/calendar-cache";
 
 type Course = "" | "席のみ" | "だるま満喫" | "鉄板満喫" | "特選だるま";
 type Drink = "" | "なし" | "90" | "120";
@@ -132,10 +133,13 @@ function getCourseState(params: {
     };
 }
 
-function buildMockCalendarDays(year: number, month: number): CalendarDay[] {
+function buildCalendarDays(
+    year: number,
+    month: number,
+    calendarStatusMap: Record<string, "◎" | "△" | "×" | "休">
+): CalendarDay[] {
     const firstDay = new Date(year, month - 1, 1);
     const lastDay = new Date(year, month, 0);
-
     const startWeekday = firstDay.getDay();
     const daysInMonth = lastDay.getDate();
 
@@ -158,27 +162,12 @@ function buildMockCalendarDays(year: number, month: number): CalendarDay[] {
     for (let day = 1; day <= daysInMonth; day++) {
         const dateObj = new Date(year, month - 1, day);
         const weekday = dateObj.getDay();
-
         const date = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 
-        let status: CalendarDay["status"] = "◎";
-        let disabled = false;
+        const status = calendarStatusMap[date] ?? "";
 
-        if (weekday === 3) {
-            status = "休";
-            disabled = true;
-        } else if (day % 7 === 0) {
-            status = "×";
-            disabled = true;
-        } else if (day % 5 === 0) {
-            status = "△";
-        }
-
-        // 今月の過去日は選択不可
-        const targetDateOnly = new Date(year, month - 1, day);
-        if (targetDateOnly < todayOnly) {
-            disabled = true;
-        }
+        const isPast = dateObj < todayOnly;
+        const disabled = isPast || status === "×" || status === "休";
 
         days.push({
             date,
@@ -236,6 +225,9 @@ function Step1DateGuestsTime({
     disablePrevMonth,
     disableNextMonth,
     calendarMessage,
+    calendarStatusMap,
+    calendarStatusLoading,
+    calendarStatusError,
 }: {
     formData: ReservationFormData;
     setFormData: React.Dispatch<React.SetStateAction<ReservationFormData>>;
@@ -246,6 +238,9 @@ function Step1DateGuestsTime({
     disablePrevMonth: boolean;
     disableNextMonth: boolean;
     calendarMessage: string;
+    calendarStatusMap: CalendarStatusMap;
+    calendarStatusLoading: boolean;
+    calendarStatusError: string;
 }) {
     const displayTimes =
         formData.visitType === "lunch"
@@ -254,7 +249,7 @@ function Step1DateGuestsTime({
                 ? mockDinnerTimes
                 : [];
 
-    const calendarDays = buildMockCalendarDays(calendarYear, calendarMonth);
+    const calendarDays = buildCalendarDays(calendarYear, calendarMonth, calendarStatusMap);
 
     return (
         <div className="space-y-8">
@@ -267,8 +262,8 @@ function Step1DateGuestsTime({
                             type="button"
                             onClick={onPrevMonth}
                             className={`rounded-full border px-3 py-2 text-sm font-bold ${disablePrevMonth
-                                    ? "border-white/10 bg-white/5 text-white/30"
-                                    : "border-white/20 bg-white/5 text-white hover:bg-white/10"
+                                ? "border-white/10 bg-white/5 text-white/30"
+                                : "border-white/20 bg-white/5 text-white hover:bg-white/10"
                                 }`}
                         >
                             ←
@@ -282,13 +277,25 @@ function Step1DateGuestsTime({
                             type="button"
                             onClick={onNextMonth}
                             className={`rounded-full border px-3 py-2 text-sm font-bold ${disableNextMonth
-                                    ? "border-white/10 bg-white/5 text-white/30"
-                                    : "border-white/20 bg-white/5 text-white hover:bg-white/10"
+                                ? "border-white/10 bg-white/5 text-white/30"
+                                : "border-white/20 bg-white/5 text-white hover:bg-white/10"
                                 }`}
                         >
                             →
                         </button>
                     </div>
+
+                    {calendarStatusLoading && (
+                        <p className="mb-3 text-center text-xs font-bold text-white/70 md:text-sm">
+                            空き状況を読み込み中です...
+                        </p>
+                    )}
+
+                    {calendarStatusError && (
+                        <p className="mb-3 text-center text-xs font-bold text-red-300 md:text-sm">
+                            {calendarStatusError}
+                        </p>
+                    )}
 
                     {calendarMessage && (
                         <p className="mb-3 text-center text-xs font-bold text-yellow-200 md:text-sm">
@@ -707,6 +714,10 @@ export default function ReservationForm() {
 
     const [calendarMessage, setCalendarMessage] = useState("");
 
+    const [calendarStatusMap, setCalendarStatusMap] = useState<CalendarStatusMap>({});
+    const [calendarStatusLoading, setCalendarStatusLoading] = useState(true);
+    const [calendarStatusError, setCalendarStatusError] = useState("");
+
     useEffect(() => {
         const initLiff = async () => {
             try {
@@ -728,6 +739,25 @@ export default function ReservationForm() {
         };
 
         initLiff();
+    }, []);
+
+    useEffect(() => {
+        const loadCalendarStatus = async () => {
+            try {
+                setCalendarStatusLoading(true);
+                setCalendarStatusError("");
+
+                const result = await fetchCalendarStatus();
+                setCalendarStatusMap(result.calendarStatus);
+            } catch (error) {
+                console.error(error);
+                setCalendarStatusError("カレンダー情報の取得に失敗しました。");
+            } finally {
+                setCalendarStatusLoading(false);
+            }
+        };
+
+        loadCalendarStatus();
     }, []);
 
     const totalGuests = formData.adult + formData.child;
@@ -861,6 +891,9 @@ export default function ReservationForm() {
                         disablePrevMonth={isAtMinMonth}
                         disableNextMonth={isAtMaxMonth}
                         calendarMessage={calendarMessage}
+                        calendarStatusMap={calendarStatusMap}
+                        calendarStatusLoading={calendarStatusLoading}
+                        calendarStatusError={calendarStatusError}
                     />
                 )}
                 {currentStep === 2 && <Step2Course formData={formData} setFormData={setFormData} />}
