@@ -224,6 +224,8 @@ function Step1DateGuestsTime({
     calendarMonth,
     onPrevMonth,
     onNextMonth,
+    disablePrevMonth,
+    disableNextMonth,
 }: {
     formData: ReservationFormData;
     setFormData: React.Dispatch<React.SetStateAction<ReservationFormData>>;
@@ -231,6 +233,8 @@ function Step1DateGuestsTime({
     calendarMonth: number;
     onPrevMonth: () => void;
     onNextMonth: () => void;
+    disablePrevMonth: boolean;
+    disableNextMonth: boolean;
 }) {
     const displayTimes =
         formData.visitType === "lunch"
@@ -251,7 +255,11 @@ function Step1DateGuestsTime({
                         <button
                             type="button"
                             onClick={onPrevMonth}
-                            className="rounded-full border border-white/20 bg-white/5 px-3 py-2 text-sm font-bold text-white hover:bg-white/10"
+                            disabled={disablePrevMonth}
+                            className={`rounded-full border px-3 py-2 text-sm font-bold ${disablePrevMonth
+                                ? "cursor-not-allowed border-white/10 bg-white/5 text-white/30"
+                                : "border-white/20 bg-white/5 text-white hover:bg-white/10"
+                                }`}
                         >
                             ←
                         </button>
@@ -263,7 +271,11 @@ function Step1DateGuestsTime({
                         <button
                             type="button"
                             onClick={onNextMonth}
-                            className="rounded-full border border-white/20 bg-white/5 px-3 py-2 text-sm font-bold text-white hover:bg-white/10"
+                            disabled={disableNextMonth}
+                            className={`rounded-full border px-3 py-2 text-sm font-bold ${disableNextMonth
+                                ? "cursor-not-allowed border-white/10 bg-white/5 text-white/30"
+                                : "border-white/20 bg-white/5 text-white hover:bg-white/10"
+                                }`}
                         >
                             →
                         </button>
@@ -664,8 +676,19 @@ export default function ReservationForm() {
     const [isLiffReady, setIsLiffReady] = useState(false);
     const [liffError, setLiffError] = useState("");
 
-    const [calendarYear, setCalendarYear] = useState(2026);
-    const [calendarMonth, setCalendarMonth] = useState(5);
+    const today = new Date();
+    const minYear = today.getFullYear();
+    const minMonth = today.getMonth() + 1;
+
+    const maxBaseDate = new Date(today.getFullYear(), today.getMonth() + 3, 0);
+    const maxYear = maxBaseDate.getFullYear();
+    const maxMonth = maxBaseDate.getMonth() + 1;
+
+    const [calendarYear, setCalendarYear] = useState(minYear);
+    const [calendarMonth, setCalendarMonth] = useState(minMonth);
+
+    const isAtMinMonth = calendarYear === minYear && calendarMonth === minMonth;
+    const isAtMaxMonth = calendarYear === maxYear && calendarMonth === maxMonth;
 
     useEffect(() => {
         const initLiff = async () => {
@@ -707,6 +730,8 @@ export default function ReservationForm() {
     };
 
     const handlePrevMonth = () => {
+        if (isAtMinMonth) return;
+
         setCalendarMonth((prevMonth) => {
             if (prevMonth === 1) {
                 setCalendarYear((prevYear) => prevYear - 1);
@@ -717,6 +742,8 @@ export default function ReservationForm() {
     };
 
     const handleNextMonth = () => {
+        if (isAtMaxMonth) return;
+
         setCalendarMonth((prevMonth) => {
             if (prevMonth === 12) {
                 setCalendarYear((prevYear) => prevYear + 1);
@@ -804,6 +831,8 @@ export default function ReservationForm() {
                         calendarMonth={calendarMonth}
                         onPrevMonth={handlePrevMonth}
                         onNextMonth={handleNextMonth}
+                        disablePrevMonth={isAtMinMonth}
+                        disableNextMonth={isAtMaxMonth}
                     />
                 )}
                 {currentStep === 2 && <Step2Course formData={formData} setFormData={setFormData} />}
