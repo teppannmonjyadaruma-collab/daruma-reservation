@@ -139,6 +139,9 @@ function buildMockCalendarDays(year: number, month: number): CalendarDay[] {
     const startWeekday = firstDay.getDay();
     const daysInMonth = lastDay.getDate();
 
+    const today = new Date();
+    const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
     const days: CalendarDay[] = [];
 
     for (let i = 0; i < startWeekday; i++) {
@@ -169,6 +172,12 @@ function buildMockCalendarDays(year: number, month: number): CalendarDay[] {
             disabled = true;
         } else if (day % 5 === 0) {
             status = "△";
+        }
+
+        // 今月の過去日は選択不可
+        const targetDateOnly = new Date(year, month - 1, day);
+        if (targetDateOnly < todayOnly) {
+            disabled = true;
         }
 
         days.push({
@@ -226,6 +235,7 @@ function Step1DateGuestsTime({
     onNextMonth,
     disablePrevMonth,
     disableNextMonth,
+    calendarMessage,
 }: {
     formData: ReservationFormData;
     setFormData: React.Dispatch<React.SetStateAction<ReservationFormData>>;
@@ -235,6 +245,7 @@ function Step1DateGuestsTime({
     onNextMonth: () => void;
     disablePrevMonth: boolean;
     disableNextMonth: boolean;
+    calendarMessage: string;
 }) {
     const displayTimes =
         formData.visitType === "lunch"
@@ -255,10 +266,9 @@ function Step1DateGuestsTime({
                         <button
                             type="button"
                             onClick={onPrevMonth}
-                            disabled={disablePrevMonth}
                             className={`rounded-full border px-3 py-2 text-sm font-bold ${disablePrevMonth
-                                ? "cursor-not-allowed border-white/10 bg-white/5 text-white/30"
-                                : "border-white/20 bg-white/5 text-white hover:bg-white/10"
+                                    ? "border-white/10 bg-white/5 text-white/30"
+                                    : "border-white/20 bg-white/5 text-white hover:bg-white/10"
                                 }`}
                         >
                             ←
@@ -271,15 +281,20 @@ function Step1DateGuestsTime({
                         <button
                             type="button"
                             onClick={onNextMonth}
-                            disabled={disableNextMonth}
                             className={`rounded-full border px-3 py-2 text-sm font-bold ${disableNextMonth
-                                ? "cursor-not-allowed border-white/10 bg-white/5 text-white/30"
-                                : "border-white/20 bg-white/5 text-white hover:bg-white/10"
+                                    ? "border-white/10 bg-white/5 text-white/30"
+                                    : "border-white/20 bg-white/5 text-white hover:bg-white/10"
                                 }`}
                         >
                             →
                         </button>
                     </div>
+
+                    {calendarMessage && (
+                        <p className="mb-3 text-center text-xs font-bold text-yellow-200 md:text-sm">
+                            {calendarMessage}
+                        </p>
+                    )}
 
                     <div className="mb-2 grid grid-cols-7 gap-2 text-center text-sm font-bold">
                         {weekLabels.map((label, index) => {
@@ -690,6 +705,8 @@ export default function ReservationForm() {
     const isAtMinMonth = calendarYear === minYear && calendarMonth === minMonth;
     const isAtMaxMonth = calendarYear === maxYear && calendarMonth === maxMonth;
 
+    const [calendarMessage, setCalendarMessage] = useState("");
+
     useEffect(() => {
         const initLiff = async () => {
             try {
@@ -730,7 +747,12 @@ export default function ReservationForm() {
     };
 
     const handlePrevMonth = () => {
-        if (isAtMinMonth) return;
+        if (isAtMinMonth) {
+            setCalendarMessage("今月より前のご予約は表示できません。");
+            return;
+        }
+
+        setCalendarMessage("");
 
         setCalendarMonth((prevMonth) => {
             if (prevMonth === 1) {
@@ -742,7 +764,12 @@ export default function ReservationForm() {
     };
 
     const handleNextMonth = () => {
-        if (isAtMaxMonth) return;
+        if (isAtMaxMonth) {
+            setCalendarMessage("ご予約は2ヶ月先の月末まで可能です。");
+            return;
+        }
+
+        setCalendarMessage("");
 
         setCalendarMonth((prevMonth) => {
             if (prevMonth === 12) {
@@ -833,6 +860,7 @@ export default function ReservationForm() {
                         onNextMonth={handleNextMonth}
                         disablePrevMonth={isAtMinMonth}
                         disableNextMonth={isAtMaxMonth}
+                        calendarMessage={calendarMessage}
                     />
                 )}
                 {currentStep === 2 && <Step2Course formData={formData} setFormData={setFormData} />}
