@@ -748,9 +748,12 @@ export default function ReservationForm() {
                 setCalendarStatusError("");
 
                 const result = await fetchCalendarStatus();
+                console.log("Firebase calendarCache result:", result);
+                console.log("calendarStatus keys:", Object.keys(result.calendarStatus || {}));
+
                 setCalendarStatusMap(result.calendarStatus);
             } catch (error) {
-                console.error(error);
+                console.error("fetchCalendarStatus error:", error);
                 setCalendarStatusError("カレンダー情報の取得に失敗しました。");
             } finally {
                 setCalendarStatusLoading(false);
@@ -879,6 +882,10 @@ export default function ReservationForm() {
         >
             <div className="rounded-[27px] bg-[rgba(0,0,0,0.58)] p-4 text-white backdrop-blur-[2px] md:p-8">
                 <StepIndicator currentStep={currentStep} />
+
+                <p className="mb-4 text-xs text-white">
+                    calendarStatus件数: {Object.keys(calendarStatusMap).length}
+                </p>
 
                 {currentStep === 1 && (
                     <Step1DateGuestsTime
