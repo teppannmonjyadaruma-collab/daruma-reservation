@@ -20,18 +20,20 @@ export default function Home() {
           <Image
             src="/logo.png"
             alt="鉄板もんじゃ だるま"
-            width={420}
-            height={160}
-            className="h-auto w-[180px] md:w-[240px]"
+            width={520}
+            height={200}
+            className="h-auto w-[230px] md:w-[300px]"
             priority
           />
         </div>
 
         <div className="mb-6 text-center">
           <h1
-            className="text-[2rem] font-black leading-none md:text-[3rem]"
+            className="text-[2.5rem] leading-none md:text-[3.8rem]"
             style={{
               color: "#f7d36a",
+              fontFamily: '"Yu Mincho", "Hiragino Mincho ProN", "MS PMincho", serif',
+              fontWeight: 700,
               textShadow: "0 2px 6px rgba(0,0,0,0.85)",
             }}
           >

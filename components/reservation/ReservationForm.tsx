@@ -200,7 +200,7 @@ function Step1DateGuestsTime({
             </section>
 
             <section>
-                <h2 className="mb-3 text-xl font-black text-yellow-300">STEP2 人数を選ぶ</h2>
+                <h2 className="mb-3 text-lg font-black text-yellow-300 md:text-xl">STEP2 人数を選ぶ</h2>
                 <div className="grid grid-cols-2 gap-4">
                     <div>
                         <label className="mb-2 block text-sm font-bold text-white">大人</label>
@@ -611,35 +611,43 @@ export default function ReservationForm() {
     };
 
     return (
-        <div className="mx-auto w-full rounded-[28px] border border-[#f7d36a]/35 bg-[rgba(35,12,8,0.72)] p-4 text-white shadow-[0_12px_30px_rgba(0,0,0,0.35)] backdrop-blur-[2px] md:p-8">
-            <StepIndicator currentStep={currentStep} />
+        <div
+            className="mx-auto w-full rounded-[28px] p-[1.5px] shadow-[0_12px_30px_rgba(0,0,0,0.35)]"
+            style={{
+                background:
+                    "linear-gradient(180deg, rgba(255,235,170,0.95) 0%, rgba(247,211,106,0.9) 40%, rgba(176,122,24,0.95) 100%)",
+            }}
+        >
+            <div className="rounded-[27px] bg-[rgba(35,12,8,0.72)] p-4 text-white backdrop-blur-[2px] md:p-8">
+                <StepIndicator currentStep={currentStep} />
 
-            {currentStep === 1 && <Step1DateGuestsTime formData={formData} setFormData={setFormData} />}
-            {currentStep === 2 && <Step2Course formData={formData} setFormData={setFormData} />}
-            {currentStep === 3 && <Step3Options formData={formData} setFormData={setFormData} />}
-            {currentStep === 4 && <Step4CustomerInfo formData={formData} setFormData={setFormData} />}
-            {currentStep === 5 && <Step5Confirm formData={formData} />}
+                {currentStep === 1 && <Step1DateGuestsTime formData={formData} setFormData={setFormData} />}
+                {currentStep === 2 && <Step2Course formData={formData} setFormData={setFormData} />}
+                {currentStep === 3 && <Step3Options formData={formData} setFormData={setFormData} />}
+                {currentStep === 4 && <Step4CustomerInfo formData={formData} setFormData={setFormData} />}
+                {currentStep === 5 && <Step5Confirm formData={formData} />}
 
-            {error && <p className="mt-6 rounded-xl bg-red-950/70 px-4 py-3 text-sm font-bold text-red-200">{error}</p>}
+                {error && <p className="mt-6 rounded-xl bg-red-950/70 px-4 py-3 text-sm font-bold text-red-200">{error}</p>}
 
-            <div className="mt-8 flex items-center justify-between gap-3">
-                <button
-                    type="button"
-                    onClick={handleBack}
-                    disabled={currentStep === 1}
-                    className="rounded-2xl border border-white/20 px-5 py-3 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                    戻る
-                </button>
-                {currentStep !== 5 && (
+                <div className="mt-8 flex items-center justify-between gap-3">
                     <button
                         type="button"
-                        onClick={handleNext}
-                        className="rounded-2xl bg-yellow-400 px-6 py-3 text-sm font-black text-black"
+                        onClick={handleBack}
+                        disabled={currentStep === 1}
+                        className="rounded-2xl border border-white/20 px-5 py-3 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-40"
                     >
-                        次へ
+                        戻る
                     </button>
-                )}
+                    {currentStep !== 5 && (
+                        <button
+                            type="button"
+                            onClick={handleNext}
+                            className="rounded-2xl bg-yellow-400 px-6 py-3 text-sm font-black text-black"
+                        >
+                            次へ
+                        </button>
+                    )}
+                </div>
             </div>
         </div>
     );
