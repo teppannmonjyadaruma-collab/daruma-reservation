@@ -220,9 +220,17 @@ function StepIndicator({ currentStep }: { currentStep: Step }) {
 function Step1DateGuestsTime({
     formData,
     setFormData,
+    calendarYear,
+    calendarMonth,
+    onPrevMonth,
+    onNextMonth,
 }: {
     formData: ReservationFormData;
     setFormData: React.Dispatch<React.SetStateAction<ReservationFormData>>;
+    calendarYear: number;
+    calendarMonth: number;
+    onPrevMonth: () => void;
+    onNextMonth: () => void;
 }) {
     const displayTimes =
         formData.visitType === "lunch"
@@ -231,7 +239,7 @@ function Step1DateGuestsTime({
                 ? mockDinnerTimes
                 : [];
 
-    const calendarDays = buildMockCalendarDays(2026, 5);
+    const calendarDays = buildMockCalendarDays(calendarYear, calendarMonth);
 
     return (
         <div className="space-y-8">
@@ -239,8 +247,26 @@ function Step1DateGuestsTime({
                 <h2 className="mb-3 text-lg font-black text-yellow-300 md:text-xl">ステップ1 来店日を選ぶ</h2>
 
                 <div className="rounded-2xl bg-black/25 p-3">
-                    <div className="mb-3 text-center text-base font-black text-white md:text-lg">
-                        2026年5月
+                    <div className="mb-3 flex items-center justify-between gap-3">
+                        <button
+                            type="button"
+                            onClick={onPrevMonth}
+                            className="rounded-full border border-white/20 bg-white/5 px-3 py-2 text-sm font-bold text-white hover:bg-white/10"
+                        >
+                            ←
+                        </button>
+
+                        <div className="text-center text-base font-black text-white md:text-lg">
+                            {calendarYear}年{calendarMonth}月
+                        </div>
+
+                        <button
+                            type="button"
+                            onClick={onNextMonth}
+                            className="rounded-full border border-white/20 bg-white/5 px-3 py-2 text-sm font-bold text-white hover:bg-white/10"
+                        >
+                            →
+                        </button>
                     </div>
 
                     <div className="mb-2 grid grid-cols-7 gap-2 text-center text-sm font-bold">
@@ -638,6 +664,9 @@ export default function ReservationForm() {
     const [isLiffReady, setIsLiffReady] = useState(false);
     const [liffError, setLiffError] = useState("");
 
+    const [calendarYear, setCalendarYear] = useState(2026);
+    const [calendarMonth, setCalendarMonth] = useState(5);
+
     useEffect(() => {
         const initLiff = async () => {
             try {
@@ -675,6 +704,26 @@ export default function ReservationForm() {
                 teppanPref: teppanOptions.includes(prev.teppanPref) ? prev.teppanPref : teppanOptions[0] ?? "",
             }));
         }
+    };
+
+    const handlePrevMonth = () => {
+        setCalendarMonth((prevMonth) => {
+            if (prevMonth === 1) {
+                setCalendarYear((prevYear) => prevYear - 1);
+                return 12;
+            }
+            return prevMonth - 1;
+        });
+    };
+
+    const handleNextMonth = () => {
+        setCalendarMonth((prevMonth) => {
+            if (prevMonth === 12) {
+                setCalendarYear((prevYear) => prevYear + 1);
+                return 1;
+            }
+            return prevMonth + 1;
+        });
     };
 
     const handleNext = () => {
@@ -747,7 +796,16 @@ export default function ReservationForm() {
             <div className="rounded-[27px] bg-[rgba(0,0,0,0.58)] p-4 text-white backdrop-blur-[2px] md:p-8">
                 <StepIndicator currentStep={currentStep} />
 
-                {currentStep === 1 && <Step1DateGuestsTime formData={formData} setFormData={setFormData} />}
+                {currentStep === 1 && (
+                    <Step1DateGuestsTime
+                        formData={formData}
+                        setFormData={setFormData}
+                        calendarYear={calendarYear}
+                        calendarMonth={calendarMonth}
+                        onPrevMonth={handlePrevMonth}
+                        onNextMonth={handleNextMonth}
+                    />
+                )}
                 {currentStep === 2 && <Step2Course formData={formData} setFormData={setFormData} />}
                 {currentStep === 3 && <Step3Options formData={formData} setFormData={setFormData} />}
                 {currentStep === 4 && <Step4CustomerInfo formData={formData} setFormData={setFormData} />}
