@@ -140,8 +140,8 @@ function StepIndicator({ currentStep }: { currentStep: Step }) {
                 <div key={step} className="flex items-center gap-2">
                     <div
                         className={`flex h-9 w-9 items-center justify-center rounded-full border text-sm transition ${currentStep === step
-                                ? "border-yellow-300 bg-yellow-400 text-black shadow-[0_0_12px_rgba(255,220,120,0.4)]"
-                                : "border-white/25 bg-black/30 text-white"
+                            ? "border-yellow-300 bg-yellow-400 text-black shadow-[0_0_12px_rgba(255,220,120,0.4)]"
+                            : "border-white/25 bg-black/30 text-white"
                             }`}
                     >
                         {step}
@@ -170,7 +170,7 @@ function Step1DateGuestsTime({
     return (
         <div className="space-y-8">
             <section>
-                <h2 className="mb-3 text-lg font-black text-yellow-300 md:text-xl">ステップ1 来店日を選ぶ</h2>
+                <h2 className="mb-3 text-lg font-black text-yellow-300 md:text-xl">STEP1 来店日を選ぶ</h2>
                 <div className="grid grid-cols-4 gap-2 rounded-2xl bg-black/25 p-3 md:grid-cols-7">
                     {mockCalendarDays.map((day) => (
                         <button
@@ -200,8 +200,8 @@ function Step1DateGuestsTime({
             </section>
 
             <section>
-                <h2 className="mb-3 text-lg font-black text-yellow-300 md:text-xl">ステップ2 人数を選ぶ</h2>
-                <div className="grid gap-4 md:grid-cols-2">
+                <h2 className="mb-3 text-xl font-black text-yellow-300">STEP2 人数を選ぶ</h2>
+                <div className="grid grid-cols-2 gap-4">
                     <div>
                         <label className="mb-2 block text-sm font-bold text-white">大人</label>
                         <select
@@ -224,6 +224,7 @@ function Step1DateGuestsTime({
                             ))}
                         </select>
                     </div>
+
                     <div>
                         <label className="mb-2 block text-sm font-bold text-white">子供</label>
                         <select
@@ -250,7 +251,7 @@ function Step1DateGuestsTime({
             </section>
 
             <section>
-                <h2 className="mb-3 text-lg font-black text-yellow-300 md:text-xl">ステップ3 ランチ / ディナーを選ぶ</h2>
+                <h2 className="mb-3 text-lg font-black text-yellow-300 md:text-xl">STEP3 ランチ / ディナーを選ぶ</h2>
                 <div className="grid grid-cols-2 gap-3">
                     <button
                         type="button"
@@ -295,7 +296,7 @@ function Step1DateGuestsTime({
             </section>
 
             <section>
-                <h2 className="mb-3 text-lg font-black text-yellow-300 md:text-xl">ステップ4 時間帯を選ぶ</h2>
+                <h2 className="mb-3 text-lg font-black text-yellow-300 md:text-xl">STEP4 時間帯を選ぶ</h2>
 
                 {!formData.visitType ? (
                     <div className="rounded-2xl border border-white/10 bg-black/25 px-4 py-5 text-sm text-white/75">
@@ -360,7 +361,7 @@ function Step2Course({
 
     return (
         <div>
-            <h2 className="mb-3 text-lg font-black text-yellow-300 md:text-xl">ステップ4 コースを選ぶ</h2>
+            <h2 className="mb-3 text-lg font-black text-yellow-300 md:text-xl">STEP4 コースを選ぶ</h2>
             <div className="grid gap-4 md:grid-cols-2">
                 {cards.map((course) => {
                     const state = courseState[course];
@@ -410,7 +411,7 @@ function Step3Options({
 
     return (
         <div className="space-y-8">
-            <h2 className="mb-3 text-lg font-black text-yellow-300 md:text-xl">ステップ5 オプションを選ぶ</h2>
+            <h2 className="mb-3 text-lg font-black text-yellow-300 md:text-xl">STEP5 オプションを選ぶ</h2>
 
             {showDrink && (
                 <section>
@@ -466,7 +467,7 @@ function Step4CustomerInfo({
 
     return (
         <div className="space-y-5">
-            <h2 className="mb-3 text-lg font-black text-yellow-300 md:text-xl">ステップ6 お客様情報を入力</h2>
+            <h2 className="mb-3 text-lg font-black text-yellow-300 md:text-xl">STEP6 お客様情報を入力</h2>
             <input value={formData.name} onChange={(e) => update("name", e.target.value)} placeholder="氏名" className="w-full rounded-xl border border-yellow-600 bg-white px-4 py-3 text-black" />
             <input value={formData.kana} onChange={(e) => update("kana", e.target.value)} placeholder="フリガナ" className="w-full rounded-xl border border-yellow-600 bg-white px-4 py-3 text-black" />
             <input value={formData.phone} onChange={(e) => update("phone", e.target.value)} placeholder="電話番号" className="w-full rounded-xl border border-yellow-600 bg-white px-4 py-3 text-black" />
@@ -478,7 +479,7 @@ function Step4CustomerInfo({
 function Step5Confirm({ formData }: { formData: ReservationFormData }) {
     return (
         <div className="space-y-4">
-            <h2 className="mb-3 text-lg font-black text-yellow-300 md:text-xl">ステップ7 内容確認</h2>
+            <h2 className="mb-3 text-lg font-black text-yellow-300 md:text-xl">STEP7 内容確認</h2>
             <div className="rounded-2xl border border-yellow-500 bg-black/25 p-4 text-white">
                 <dl className="grid gap-2 md:grid-cols-2">
                     <div><dt className="text-sm text-white/65">来店日</dt><dd>{formData.visitDate}</dd></div>
@@ -612,18 +613,6 @@ export default function ReservationForm() {
     return (
         <div className="mx-auto w-full rounded-[28px] border border-[#f7d36a]/35 bg-[rgba(35,12,8,0.72)] p-4 text-white shadow-[0_12px_30px_rgba(0,0,0,0.35)] backdrop-blur-[2px] md:p-8">
             <StepIndicator currentStep={currentStep} />
-
-            <div className="mb-6 rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-white">
-                {!isLiffReady && !liffError && <p>LINEユーザー情報を取得中です...</p>}
-                {liffError && <p className="text-red-300">{liffError}</p>}
-                {isLiffReady && (
-                    <div className="mb-6 rounded-2xl border border-white/10 bg-black/20 p-3 text-sm text-white">
-                        {!isLiffReady && !liffError && <p>LINEユーザー情報を取得中です...</p>}
-                        {liffError && <p className="text-red-300">{liffError}</p>}
-                        {isLiffReady && <p>LINE連携が完了しました。</p>}
-                    </div>
-                )}
-            </div>
 
             {currentStep === 1 && <Step1DateGuestsTime formData={formData} setFormData={setFormData} />}
             {currentStep === 2 && <Step2Course formData={formData} setFormData={setFormData} />}
