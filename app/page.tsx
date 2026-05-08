@@ -16,7 +16,7 @@ export default function Home() {
       <div className="fixed inset-0 -z-10 bg-black/18" />
 
       <section className="relative mx-auto w-full max-w-3xl px-4 py-6 md:px-6 md:py-10">
-        <div className="mb-5 flex justify-center">
+        <div className="mb-2 flex justify-center">
           <Image
             src="/logo.png"
             alt="鉄板もんじゃ だるま"
@@ -27,7 +27,7 @@ export default function Home() {
           />
         </div>
 
-        <div className="mb-6 text-center">
+        <div className="mb-5 text-center">
           <h1
             className="text-[2.5rem] leading-none md:text-[3.8rem]"
             style={{

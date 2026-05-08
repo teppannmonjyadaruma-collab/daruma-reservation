@@ -618,7 +618,7 @@ export default function ReservationForm() {
                     "linear-gradient(180deg, rgba(255,235,170,0.95) 0%, rgba(247,211,106,0.9) 40%, rgba(176,122,24,0.95) 100%)",
             }}
         >
-            <div className="rounded-[27px] bg-[rgba(35,12,8,0.72)] p-4 text-white backdrop-blur-[2px] md:p-8">
+            <div className="rounded-[27px] bg-[rgba(0,0,0,0.58)] p-4 text-white backdrop-blur-[2px] md:p-8">
                 <StepIndicator currentStep={currentStep} />
 
                 {currentStep === 1 && <Step1DateGuestsTime formData={formData} setFormData={setFormData} />}
