@@ -24,6 +24,14 @@ type ReservationFormData = {
     note: string;
 };
 
+type CalendarDay = {
+    date: string;
+    dayNumber: number;
+    status: "◎" | "△" | "×" | "休" | "";
+    disabled: boolean;
+    isCurrentMonth: boolean;
+};
+
 type CourseState = Record<Exclude<Course, "">, { disabled: boolean; reason: string }>;
 
 const LIFF_ID = "2009798529-5aHrd2K7";
@@ -43,15 +51,7 @@ const initialFormData: ReservationFormData = {
     note: "",
 };
 
-const mockCalendarDays = [
-    { date: "2026-05-01", label: "5/1", status: "◎", disabled: false },
-    { date: "2026-05-02", label: "5/2", status: "△", disabled: false },
-    { date: "2026-05-03", label: "5/3", status: "△", disabled: false },
-    { date: "2026-05-04", label: "5/4", status: "◎", disabled: false },
-    { date: "2026-05-05", label: "5/5", status: "◎", disabled: false },
-    { date: "2026-05-06", label: "5/6", status: "休", disabled: true },
-    { date: "2026-05-07", label: "5/7", status: "×", disabled: true },
-];
+const weekLabels = ["日", "月", "火", "水", "木", "金", "土"];
 
 const mockLunchTimes = ["11:00", "11:15", "11:30", "12:00", "12:30", "13:00"];
 const mockDinnerTimes = ["17:00", "17:15", "18:00", "18:30", "19:00", "19:30"];
@@ -131,6 +131,66 @@ function getCourseState(params: {
     };
 }
 
+function buildMockCalendarDays(year: number, month: number): CalendarDay[] {
+    const firstDay = new Date(year, month - 1, 1);
+    const lastDay = new Date(year, month, 0);
+
+    const startWeekday = firstDay.getDay();
+    const daysInMonth = lastDay.getDate();
+
+    const days: CalendarDay[] = [];
+
+    for (let i = 0; i < startWeekday; i++) {
+        days.push({
+            date: "",
+            dayNumber: 0,
+            status: "",
+            disabled: true,
+            isCurrentMonth: false,
+        });
+    }
+
+    for (let day = 1; day <= daysInMonth; day++) {
+        const dateObj = new Date(year, month - 1, day);
+        const weekday = dateObj.getDay();
+
+        const date = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+
+        let status: CalendarDay["status"] = "◎";
+        let disabled = false;
+
+        if (weekday === 3) {
+            status = "休";
+            disabled = true;
+        } else if (day % 7 === 0) {
+            status = "×";
+            disabled = true;
+        } else if (day % 5 === 0) {
+            status = "△";
+        }
+
+        days.push({
+            date,
+            dayNumber: day,
+            status,
+            disabled,
+            isCurrentMonth: true,
+        });
+    }
+
+    while (days.length % 7 !== 0) {
+        days.push({
+            date: "",
+            dayNumber: 0,
+            status: "",
+            disabled: true,
+            isCurrentMonth: false,
+        });
+    }
+
+    return days;
+}
+
 function StepIndicator({ currentStep }: { currentStep: Step }) {
     const steps = [1, 2, 3, 4, 5] as const;
 
@@ -167,35 +227,58 @@ function Step1DateGuestsTime({
                 ? mockDinnerTimes
                 : [];
 
+    const calendarDays = buildMockCalendarDays(2026, 5);
+
     return (
         <div className="space-y-8">
             <section>
-                <h2 className="mb-3 text-lg font-black text-yellow-300 md:text-xl">STEP1 来店日を選ぶ</h2>
-                <div className="grid grid-cols-4 gap-2 rounded-2xl bg-black/25 p-3 md:grid-cols-7">
-                    {mockCalendarDays.map((day) => (
-                        <button
-                            key={day.date}
-                            type="button"
-                            disabled={day.disabled}
-                            onClick={() =>
-                                setFormData((prev) => ({
-                                    ...prev,
-                                    visitDate: day.date,
-                                    startTime: "",
-                                    course: "",
-                                    drink: "",
-                                    teppanPref: "",
-                                }))
+                <h2 className="mb-3 text-lg font-black text-yellow-300 md:text-xl">ステップ1 来店日を選ぶ</h2>
+
+                <div className="rounded-2xl bg-black/25 p-3">
+                    <div className="mb-3 text-center text-base font-black text-white md:text-lg">
+                        2026年5月
+                    </div>
+
+                    <div className="mb-2 grid grid-cols-7 gap-2 text-center text-sm font-bold text-white/80">
+                        {weekLabels.map((label) => (
+                            <div key={label}>{label}</div>
+                        ))}
+                    </div>
+
+                    <div className="grid grid-cols-7 gap-2">
+                        {calendarDays.map((day, index) => {
+                            if (!day.isCurrentMonth) {
+                                return <div key={`blank-${index}`} className="aspect-square rounded-xl bg-transparent" />;
                             }
-                            className={`rounded-xl border px-2 py-3 text-center transition ${formData.visitDate === day.date
-                                ? "border-yellow-300 bg-yellow-400 text-black"
-                                : "border-white/20 bg-white/5 text-white"
-                                } ${day.disabled ? "cursor-not-allowed opacity-40" : "hover:bg-white/10"}`}
-                        >
-                            <div className="text-sm font-bold">{day.label}</div>
-                            <div className="mt-1 text-xs">{day.status}</div>
-                        </button>
-                    ))}
+
+                            const isSelected = formData.visitDate === day.date;
+
+                            return (
+                                <button
+                                    key={day.date}
+                                    type="button"
+                                    disabled={day.disabled}
+                                    onClick={() =>
+                                        setFormData((prev) => ({
+                                            ...prev,
+                                            visitDate: day.date,
+                                            startTime: "",
+                                            course: "",
+                                            drink: "",
+                                            teppanPref: "",
+                                        }))
+                                    }
+                                    className={`aspect-square rounded-xl border p-1 text-center transition ${isSelected
+                                            ? "border-yellow-300 bg-yellow-400 text-black"
+                                            : "border-white/20 bg-white/5 text-white"
+                                        } ${day.disabled ? "cursor-not-allowed opacity-40" : "hover:bg-white/10"}`}
+                                >
+                                    <div className="mt-1 text-sm font-black md:text-base">{day.dayNumber}</div>
+                                    <div className="mt-1 text-[11px] font-bold md:text-xs">{day.status}</div>
+                                </button>
+                            );
+                        })}
+                    </div>
                 </div>
             </section>
 
