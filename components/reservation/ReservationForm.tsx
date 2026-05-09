@@ -261,6 +261,11 @@ function Step1DateGuestsTime({
                 ? dinnerAvailableTimes
                 : [];
 
+    console.log("visitType:", formData.visitType);
+    console.log("lunchAvailableTimes:", lunchAvailableTimes);
+    console.log("dinnerAvailableTimes:", dinnerAvailableTimes);
+    console.log("displayTimes:", displayTimes);
+
     const calendarDays = buildCalendarDays(calendarYear, calendarMonth, calendarStatusMap);
 
     return (
@@ -848,6 +853,7 @@ export default function ReservationForm() {
 
         try {
             const result = await fetchDayAvailabilityDetail(date, adult, child);
+            console.log("day availability result:", result);
 
             setLunchAvailableTimes(result.lunchAvailableTimes ?? []);
             setDinnerAvailableTimes(result.dinnerAvailableTimes ?? []);
@@ -861,7 +867,7 @@ export default function ReservationForm() {
                 teppanPref: "",
             }));
         } catch (error) {
-            console.error(error);
+            console.error("loadDayAvailability error:", error);
             setDayAvailabilityError("この日の空き時間取得に失敗しました。");
             setLunchAvailableTimes([]);
             setDinnerAvailableTimes([]);
