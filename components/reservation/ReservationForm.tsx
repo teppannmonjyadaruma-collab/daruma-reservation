@@ -853,7 +853,12 @@ export default function ReservationForm() {
 
         try {
             const result = await fetchDayAvailabilityDetail(date, adult, child);
-            console.log("day availability result:", result);
+
+            console.log("day availability result raw:", result);
+            console.log("day availability result JSON:", JSON.stringify(result, null, 2));
+            console.log("result.lunchAvailableTimes:", result.lunchAvailableTimes);
+            console.log("result.dinnerAvailableTimes:", result.dinnerAvailableTimes);
+            console.log("request params:", { date, adult, child, visitType });
 
             setLunchAvailableTimes(result.lunchAvailableTimes ?? []);
             setDinnerAvailableTimes(result.dinnerAvailableTimes ?? []);
@@ -871,8 +876,6 @@ export default function ReservationForm() {
             setDayAvailabilityError("この日の空き時間取得に失敗しました。");
             setLunchAvailableTimes([]);
             setDinnerAvailableTimes([]);
-        } finally {
-            setDayAvailabilityLoading(false);
         }
     };
 
