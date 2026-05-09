@@ -495,13 +495,10 @@ function Step1DateGuestsTime({
                 ) : (
                     <div className="relative">
                         {displayTimes.length > 0 && (
-                            <div className="mb-2 flex items-center justify-end gap-1 text-xs font-bold text-white/60">
-                                <span>左右にスクロールできます</span>
-                            </div>
+                            <p className="mb-2 text-right text-xs font-bold text-white/55">
+                                ← 左右にスクロールできます →
+                            </p>
                         )}
-
-                        <div className="pointer-events-none absolute inset-y-8 left-0 z-10 w-8 rounded-l-2xl bg-gradient-to-r from-[rgba(0,0,0,0.35)] to-transparent" />
-                        <div className="pointer-events-none absolute inset-y-8 right-0 z-10 w-8 rounded-r-2xl bg-gradient-to-l from-[rgba(0,0,0,0.35)] to-transparent" />
 
                         <div className="overflow-x-auto">
                             <div className="flex min-w-max gap-2 rounded-2xl bg-black/25 p-3">
