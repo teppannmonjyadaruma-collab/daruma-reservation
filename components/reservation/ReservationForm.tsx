@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import liff from "@line/liff";
 import { fetchCalendarStatus, type CalendarStatusMap } from "@/lib/calendar-cache";
+import { fetchDayAvailabilityDetail } from "@/lib/day-availability";
 
 type Course = "" | "席のみ" | "だるま満喫" | "鉄板満喫" | "特選だるま";
 type Drink = "" | "なし" | "90" | "120";
@@ -229,6 +230,11 @@ function Step1DateGuestsTime({
     calendarStatusMap,
     calendarStatusLoading,
     calendarStatusError,
+    onSelectVisitDate,
+    dayAvailabilityLoading,
+    dayAvailabilityError,
+    lunchAvailableTimes,
+    dinnerAvailableTimes,
 }: {
     formData: ReservationFormData;
     setFormData: React.Dispatch<React.SetStateAction<ReservationFormData>>;
@@ -242,12 +248,17 @@ function Step1DateGuestsTime({
     calendarStatusMap: CalendarStatusMap;
     calendarStatusLoading: boolean;
     calendarStatusError: string;
+    onSelectVisitDate: (date: string) => void;
+    dayAvailabilityLoading: boolean;
+    dayAvailabilityError: string;
+    lunchAvailableTimes: string[];
+    dinnerAvailableTimes: string[];
 }) {
     const displayTimes =
         formData.visitType === "lunch"
-            ? mockLunchTimes
+            ? lunchAvailableTimes
             : formData.visitType === "dinner"
-                ? mockDinnerTimes
+                ? dinnerAvailableTimes
                 : [];
 
     const calendarDays = buildCalendarDays(calendarYear, calendarMonth, calendarStatusMap);
@@ -354,16 +365,7 @@ function Step1DateGuestsTime({
                                     key={day.date}
                                     type="button"
                                     disabled={day.disabled}
-                                    onClick={() =>
-                                        setFormData((prev) => ({
-                                            ...prev,
-                                            visitDate: day.date,
-                                            startTime: "",
-                                            course: "",
-                                            drink: "",
-                                            teppanPref: "",
-                                        }))
-                                    }
+                                    onClick={() => onSelectVisitDate(day.date)}
                                     className={`aspect-square rounded-xl border p-1 text-center transition ${isSelected
                                         ? "border-yellow-300 bg-yellow-400 text-black"
                                         : "border-white/20 bg-white/5 text-white"
@@ -486,6 +488,18 @@ function Step1DateGuestsTime({
 
             <section>
                 <h2 className="mb-3 text-lg font-black text-yellow-300 md:text-xl">STEP4 時間帯を選ぶ</h2>
+
+                {dayAvailabilityLoading && (
+                    <p className="mb-3 text-sm font-bold text-white/70">
+                        選択日の空き時間を取得中です...
+                    </p>
+                )}
+
+                {dayAvailabilityError && (
+                    <p className="mb-3 text-sm font-bold text-red-300">
+                        {dayAvailabilityError}
+                    </p>
+                )}
 
                 {!formData.visitType ? (
                     <div className="rounded-2xl border border-white/10 bg-black/25 px-4 py-5 text-sm text-white/75">
@@ -721,6 +735,11 @@ export default function ReservationForm() {
     const [calendarStatusLoading, setCalendarStatusLoading] = useState(true);
     const [calendarStatusError, setCalendarStatusError] = useState("");
 
+    const [dayAvailabilityLoading, setDayAvailabilityLoading] = useState(false);
+    const [dayAvailabilityError, setDayAvailabilityError] = useState("");
+    const [lunchAvailableTimes, setLunchAvailableTimes] = useState<string[]>([]);
+    const [dinnerAvailableTimes, setDinnerAvailableTimes] = useState<string[]>([]);
+
     useEffect(() => {
         const initLiff = async () => {
             try {
@@ -816,6 +835,35 @@ export default function ReservationForm() {
         });
     };
 
+    const handleSelectVisitDate = async (date: string) => {
+        setDayAvailabilityLoading(true);
+        setDayAvailabilityError("");
+
+        try {
+            const result = await fetchDayAvailabilityDetail(date);
+
+            setLunchAvailableTimes(result.lunchAvailableTimes ?? []);
+            setDinnerAvailableTimes(result.dinnerAvailableTimes ?? []);
+
+            setFormData((prev) => ({
+                ...prev,
+                visitDate: date,
+                visitType: "",
+                startTime: "",
+                course: "",
+                drink: "",
+                teppanPref: "",
+            }));
+        } catch (error) {
+            console.error(error);
+            setDayAvailabilityError("この日の空き状況取得に失敗しました。");
+            setLunchAvailableTimes([]);
+            setDinnerAvailableTimes([]);
+        } finally {
+            setDayAvailabilityLoading(false);
+        }
+    };
+
     const handleNext = () => {
         setError("");
 
@@ -886,10 +934,6 @@ export default function ReservationForm() {
             <div className="rounded-[27px] bg-[rgba(0,0,0,0.58)] p-4 text-white backdrop-blur-[2px] md:p-8">
                 <StepIndicator currentStep={currentStep} />
 
-                <p className="mb-4 text-xs text-white">
-                    calendarStatus件数: {Object.keys(calendarStatusMap).length}
-                </p>
-
                 {currentStep === 1 && (
                     <Step1DateGuestsTime
                         formData={formData}
@@ -904,6 +948,11 @@ export default function ReservationForm() {
                         calendarStatusMap={calendarStatusMap}
                         calendarStatusLoading={calendarStatusLoading}
                         calendarStatusError={calendarStatusError}
+                        onSelectVisitDate={handleSelectVisitDate}
+                        dayAvailabilityLoading={dayAvailabilityLoading}
+                        dayAvailabilityError={dayAvailabilityError}
+                        lunchAvailableTimes={lunchAvailableTimes}
+                        dinnerAvailableTimes={dinnerAvailableTimes}
                     />
                 )}
                 {currentStep === 2 && <Step2Course formData={formData} setFormData={setFormData} />}
