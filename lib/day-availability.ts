@@ -1,45 +1,46 @@
 export type DayAvailabilityDetail = {
-  date: string;
-  adult: number;
-  child: number;
-  lunchAvailableTimes: string[];
-  dinnerAvailableTimes: string[];
-  holidayName: string;
-  businessType: "22close" | "23close" | "closed";
+    date: string;
+    adult: number;
+    child: number;
+    lunchAvailableTimes: string[];
+    dinnerAvailableTimes: string[];
+    holidayName: string;
+    businessType: "22close" | "23close" | "closed";
 };
 
 export async function fetchDayAvailabilityDetail(
-  date: string,
-  adult: number,
-  child: number
+    date: string,
+    adult: number,
+    child: number
 ): Promise<DayAvailabilityDetail> {
-  const baseUrl = process.env.NEXT_PUBLIC_GAS_API_URL;
-  if (!baseUrl) {
-    throw new Error("NEXT_PUBLIC_GAS_API_URL が未設定です。");
-  }
+    const baseUrl = process.env.NEXT_PUBLIC_GAS_API_URL;
+    if (!baseUrl) {
+        throw new Error("NEXT_PUBLIC_GAS_API_URL が未設定です。");
+    }
 
-  const url =
-    `${baseUrl}?action=dayAvailability` +
-    `&date=${encodeURIComponent(date)}` +
-    `&adult=${encodeURIComponent(String(adult))}` +
-    `&child=${encodeURIComponent(String(child))}`;
+    const url =
+        `${baseUrl}?action=dayAvailability` +
+        `&date=${encodeURIComponent(date)}` +
+        `&adult=${encodeURIComponent(String(adult))}` +
+        `&child=${encodeURIComponent(String(child))}`;
 
-  console.log("fetchDayAvailabilityDetail url:", url);
+    console.log("fetchDayAvailabilityDetail url full:");
+    console.log(url);
 
-  const res = await fetch(url, { method: "GET", cache: "no-store" });
+    const res = await fetch(url, { method: "GET", cache: "no-store" });
 
-  console.log("fetchDayAvailabilityDetail status:", res.status);
+    console.log("fetchDayAvailabilityDetail status:", res.status);
 
-  const json = await res.json();
-  console.log("fetchDayAvailabilityDetail json:", json);
+    const json = await res.json();
+    console.log("fetchDayAvailabilityDetail json:", json);
 
-  if (!res.ok) {
-    throw new Error(`空き状況取得失敗: ${res.status}`);
-  }
+    if (!res.ok) {
+        throw new Error(`空き状況取得失敗: ${res.status}`);
+    }
 
-  if (!json.ok) {
-    throw new Error(json.error || "空き状況取得に失敗しました。");
-  }
+    if (!json.ok) {
+        throw new Error(json.error || "空き状況取得に失敗しました。");
+    }
 
-  return json.data as DayAvailabilityDetail;
+    return json.data as DayAvailabilityDetail;
 }
