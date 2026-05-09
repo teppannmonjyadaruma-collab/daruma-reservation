@@ -520,14 +520,11 @@ function Step1DateGuestsTime({
                     </div>
                 )}
 
-                <p className="mt-2 text-sm text-white/75">
-                    {formData.visitType === "lunch" &&
-                        "ランチは90分枠の席のみ予約が可能な時間帯を表示する想定です。"}
-                    {formData.visitType === "dinner" &&
-                        "ディナーは120分枠の席のみ予約が可能な時間帯を表示する想定です。"}
-                    {!formData.visitType &&
-                        "ランチまたはディナーを選ぶと、選択可能な時間帯が表示されます。"}
-                </p>
+                {!formData.visitType && (
+                    <p className="mt-2 text-sm text-white/75">
+                        ランチまたはディナーを選ぶと、選択可能な時間帯が表示されます。
+                    </p>
+                )}
             </section>
         </div>
     );
