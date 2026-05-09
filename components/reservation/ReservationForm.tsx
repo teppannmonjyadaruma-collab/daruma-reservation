@@ -848,34 +848,32 @@ export default function ReservationForm() {
             return;
         }
 
+        setFormData((prev) => ({
+            ...prev,
+            visitType,
+            startTime: "",
+            course: "",
+            drink: "",
+            teppanPref: "",
+        }));
+
+        setLunchAvailableTimes([]);
+        setDinnerAvailableTimes([]);
         setDayAvailabilityLoading(true);
         setDayAvailabilityError("");
 
         try {
             const result = await fetchDayAvailabilityDetail(date, adult, child);
 
-            console.log("day availability result raw:", result);
-            console.log("day availability result JSON:", JSON.stringify(result, null, 2));
-            console.log("result.lunchAvailableTimes:", result.lunchAvailableTimes);
-            console.log("result.dinnerAvailableTimes:", result.dinnerAvailableTimes);
-            console.log("request params:", { date, adult, child, visitType });
-
             setLunchAvailableTimes(result.lunchAvailableTimes ?? []);
             setDinnerAvailableTimes(result.dinnerAvailableTimes ?? []);
-
-            setFormData((prev) => ({
-                ...prev,
-                visitType,
-                startTime: "",
-                course: "",
-                drink: "",
-                teppanPref: "",
-            }));
         } catch (error) {
             console.error("loadDayAvailability error:", error);
             setDayAvailabilityError("この日の空き時間取得に失敗しました。");
             setLunchAvailableTimes([]);
             setDinnerAvailableTimes([]);
+        } finally {
+            setDayAvailabilityLoading(false);
         }
     };
 
