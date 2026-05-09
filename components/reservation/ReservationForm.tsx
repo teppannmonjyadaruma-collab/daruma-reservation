@@ -29,7 +29,7 @@ type CalendarDay = {
     date: string;
     dayNumber: number;
     weekday: number;
-    status: "◎" | "△" | "×" | "休" | "";
+    status: "◎" | "△" | "×" | "休" | "-" | "";
     disabled: boolean;
     isCurrentMonth: boolean;
 };
@@ -164,9 +164,10 @@ function buildCalendarDays(
         const weekday = dateObj.getDay();
         const date = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 
-        const status = calendarStatusMap[date] ?? "";
-
         const isPast = dateObj < todayOnly;
+        const rawStatus = calendarStatusMap[date] ?? "";
+        const status = isPast ? "-" : rawStatus;
+
         const disabled = isPast || status === "×" || status === "休";
 
         days.push({
@@ -344,7 +345,9 @@ function Step1DateGuestsTime({
                                             ? "text-white/75"
                                             : day.status === "休"
                                                 ? "text-red-300"
-                                                : "text-white/70";
+                                                : day.status === "-"
+                                                    ? "text-white/30"
+                                                    : "text-white/70";
 
                             return (
                                 <button
