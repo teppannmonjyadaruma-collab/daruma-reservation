@@ -24,15 +24,9 @@ export async function fetchDayAvailabilityDetail(
         `&adult=${encodeURIComponent(String(adult))}` +
         `&child=${encodeURIComponent(String(child))}`;
 
-    console.log("fetchDayAvailabilityDetail url full:");
-    console.log(url);
-
     const res = await fetch(url, { method: "GET", cache: "no-store" });
 
-    console.log("fetchDayAvailabilityDetail status:", res.status);
-
     const json = await res.json();
-    console.log("fetchDayAvailabilityDetail json:", json);
 
     if (!res.ok) {
         throw new Error(`空き状況取得失敗: ${res.status}`);

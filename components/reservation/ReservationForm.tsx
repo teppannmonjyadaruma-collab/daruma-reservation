@@ -230,6 +230,7 @@ function Step1DateGuestsTime({
     calendarStatusMap,
     calendarStatusLoading,
     calendarStatusError,
+    onGuestChange,
     onSelectVisitType,
     dayAvailabilityLoading,
     dayAvailabilityError,
@@ -248,6 +249,7 @@ function Step1DateGuestsTime({
     calendarStatusMap: CalendarStatusMap;
     calendarStatusLoading: boolean;
     calendarStatusError: string;
+    onGuestChange: (type: "adult" | "child", value: number) => void;
     onSelectVisitType: (visitType: VisitType) => void;
     dayAvailabilityLoading: boolean;
     dayAvailabilityError: string;
@@ -260,11 +262,6 @@ function Step1DateGuestsTime({
             : formData.visitType === "dinner"
                 ? dinnerAvailableTimes
                 : [];
-
-    console.log("visitType:", formData.visitType);
-    console.log("lunchAvailableTimes:", lunchAvailableTimes);
-    console.log("dinnerAvailableTimes:", dinnerAvailableTimes);
-    console.log("displayTimes:", displayTimes);
 
     const calendarDays = buildCalendarDays(calendarYear, calendarMonth, calendarStatusMap);
 
@@ -412,15 +409,7 @@ function Step1DateGuestsTime({
                         <label className="mb-2 block text-sm font-bold text-white">大人</label>
                         <select
                             value={formData.adult}
-                            onChange={(e) =>
-                                setFormData((prev) => ({
-                                    ...prev,
-                                    adult: Number(e.target.value),
-                                    course: "",
-                                    drink: "",
-                                    teppanPref: "",
-                                }))
-                            }
+                            onChange={(e) => onGuestChange("adult", Number(e.target.value))}
                             className="w-full rounded-xl border border-yellow-600 bg-white px-4 py-3 text-black"
                         >
                             {Array.from({ length: 25 }, (_, i) => i).map((n) => (
@@ -435,15 +424,7 @@ function Step1DateGuestsTime({
                         <label className="mb-2 block text-sm font-bold text-white">子供</label>
                         <select
                             value={formData.child}
-                            onChange={(e) =>
-                                setFormData((prev) => ({
-                                    ...prev,
-                                    child: Number(e.target.value),
-                                    course: "",
-                                    drink: "",
-                                    teppanPref: "",
-                                }))
-                            }
+                            onChange={(e) => onGuestChange("child", Number(e.target.value))}
                             className="w-full rounded-xl border border-yellow-600 bg-white px-4 py-3 text-black"
                         >
                             {Array.from({ length: 11 }, (_, i) => i).map((n) => (
@@ -497,6 +478,15 @@ function Step1DateGuestsTime({
                         {dayAvailabilityError}
                     </p>
                 )}
+
+                {!dayAvailabilityLoading &&
+                    !dayAvailabilityError &&
+                    formData.visitType &&
+                    displayTimes.length === 0 && (
+                        <div className="mb-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-5 text-sm text-white/75">
+                            この条件で選択できる時間帯がありません。日付・人数・ランチ / ディナーを変更してお試しください。
+                        </div>
+                    )}
 
                 {!formData.visitType ? (
                     <div className="rounded-2xl border border-white/10 bg-black/25 px-4 py-5 text-sm text-white/75">
@@ -877,6 +867,23 @@ export default function ReservationForm() {
         }
     };
 
+    const handleGuestChange = (type: "adult" | "child", value: number) => {
+        setLunchAvailableTimes([]);
+        setDinnerAvailableTimes([]);
+        setDayAvailabilityError("");
+        setDayAvailabilityLoading(false);
+
+        setFormData((prev) => ({
+            ...prev,
+            [type]: value,
+            visitType: "",
+            startTime: "",
+            course: "",
+            drink: "",
+            teppanPref: "",
+        }));
+    };
+
     const handleNext = () => {
         setError("");
 
@@ -961,6 +968,7 @@ export default function ReservationForm() {
                         calendarStatusMap={calendarStatusMap}
                         calendarStatusLoading={calendarStatusLoading}
                         calendarStatusError={calendarStatusError}
+                        onGuestChange={handleGuestChange}
                         onSelectVisitType={(visitType) =>
                             loadDayAvailability(
                                 visitType,
