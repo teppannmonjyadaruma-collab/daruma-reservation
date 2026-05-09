@@ -230,7 +230,7 @@ function Step1DateGuestsTime({
     calendarStatusMap,
     calendarStatusLoading,
     calendarStatusError,
-    onSelectVisitDate,
+    onSelectVisitType,
     dayAvailabilityLoading,
     dayAvailabilityError,
     lunchAvailableTimes,
@@ -248,7 +248,7 @@ function Step1DateGuestsTime({
     calendarStatusMap: CalendarStatusMap;
     calendarStatusLoading: boolean;
     calendarStatusError: string;
-    onSelectVisitDate: (date: string) => void;
+    onSelectVisitType: (visitType: VisitType) => void;
     dayAvailabilityLoading: boolean;
     dayAvailabilityError: string;
     lunchAvailableTimes: string[];
@@ -365,7 +365,17 @@ function Step1DateGuestsTime({
                                     key={day.date}
                                     type="button"
                                     disabled={day.disabled}
-                                    onClick={() => onSelectVisitDate(day.date)}
+                                    onClick={() =>
+                                        setFormData((prev) => ({
+                                            ...prev,
+                                            visitDate: day.date,
+                                            visitType: "",
+                                            startTime: "",
+                                            course: "",
+                                            drink: "",
+                                            teppanPref: "",
+                                        }))
+                                    }
                                     className={`aspect-square rounded-xl border p-1 text-center transition ${isSelected
                                         ? "border-yellow-300 bg-yellow-400 text-black"
                                         : "border-white/20 bg-white/5 text-white"
@@ -446,16 +456,7 @@ function Step1DateGuestsTime({
                 <div className="grid grid-cols-2 gap-3">
                     <button
                         type="button"
-                        onClick={() =>
-                            setFormData((prev) => ({
-                                ...prev,
-                                visitType: "lunch",
-                                startTime: "",
-                                course: "",
-                                drink: "",
-                                teppanPref: "",
-                            }))
-                        }
+                        onClick={() => onSelectVisitType("lunch")}
                         className={`rounded-2xl border px-4 py-4 text-base font-black transition ${formData.visitType === "lunch"
                             ? "border-yellow-300 bg-yellow-400 text-black"
                             : "border-white/20 bg-white/5 text-white hover:bg-white/10"
@@ -466,16 +467,7 @@ function Step1DateGuestsTime({
 
                     <button
                         type="button"
-                        onClick={() =>
-                            setFormData((prev) => ({
-                                ...prev,
-                                visitType: "dinner",
-                                startTime: "",
-                                course: "",
-                                drink: "",
-                                teppanPref: "",
-                            }))
-                        }
+                        onClick={() => onSelectVisitType("dinner")}
                         className={`rounded-2xl border px-4 py-4 text-base font-black transition ${formData.visitType === "dinner"
                             ? "border-yellow-300 bg-yellow-400 text-black"
                             : "border-white/20 bg-white/5 text-white hover:bg-white/10"
@@ -835,20 +827,34 @@ export default function ReservationForm() {
         });
     };
 
-    const handleSelectVisitDate = async (date: string) => {
+    const loadDayAvailability = async (
+        visitType: VisitType,
+        date: string,
+        adult: number,
+        child: number
+    ) => {
+        if (!date) {
+            setDayAvailabilityError("先に来店日を選択してください。");
+            return;
+        }
+
+        if (adult + child <= 0) {
+            setDayAvailabilityError("先に人数を選択してください。");
+            return;
+        }
+
         setDayAvailabilityLoading(true);
         setDayAvailabilityError("");
 
         try {
-            const result = await fetchDayAvailabilityDetail(date);
+            const result = await fetchDayAvailabilityDetail(date, adult, child);
 
             setLunchAvailableTimes(result.lunchAvailableTimes ?? []);
             setDinnerAvailableTimes(result.dinnerAvailableTimes ?? []);
 
             setFormData((prev) => ({
                 ...prev,
-                visitDate: date,
-                visitType: "",
+                visitType,
                 startTime: "",
                 course: "",
                 drink: "",
@@ -856,7 +862,7 @@ export default function ReservationForm() {
             }));
         } catch (error) {
             console.error(error);
-            setDayAvailabilityError("この日の空き状況取得に失敗しました。");
+            setDayAvailabilityError("この日の空き時間取得に失敗しました。");
             setLunchAvailableTimes([]);
             setDinnerAvailableTimes([]);
         } finally {
@@ -948,7 +954,14 @@ export default function ReservationForm() {
                         calendarStatusMap={calendarStatusMap}
                         calendarStatusLoading={calendarStatusLoading}
                         calendarStatusError={calendarStatusError}
-                        onSelectVisitDate={handleSelectVisitDate}
+                        onSelectVisitType={(visitType) =>
+                            loadDayAvailability(
+                                visitType,
+                                formData.visitDate,
+                                formData.adult,
+                                formData.child
+                            )
+                        }
                         dayAvailabilityLoading={dayAvailabilityLoading}
                         dayAvailabilityError={dayAvailabilityError}
                         lunchAvailableTimes={lunchAvailableTimes}
