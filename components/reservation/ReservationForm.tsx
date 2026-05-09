@@ -493,29 +493,40 @@ function Step1DateGuestsTime({
                         先にランチかディナーを選択してください。
                     </div>
                 ) : (
-                    <div className="overflow-x-auto">
-                        <div className="flex min-w-max gap-2 rounded-2xl bg-black/25 p-3">
-                            {displayTimes.map((time) => (
-                                <button
-                                    key={time}
-                                    type="button"
-                                    onClick={() =>
-                                        setFormData((prev) => ({
-                                            ...prev,
-                                            startTime: time,
-                                            course: "",
-                                            drink: "",
-                                            teppanPref: "",
-                                        }))
-                                    }
-                                    className={`shrink-0 rounded-full border px-5 py-3 text-sm font-bold transition ${formData.startTime === time
-                                        ? "border-yellow-300 bg-yellow-400 text-black"
-                                        : "border-white/20 bg-white/5 text-white hover:bg-white/10"
-                                        }`}
-                                >
-                                    {time}
-                                </button>
-                            ))}
+                    <div className="relative">
+                        {displayTimes.length > 0 && (
+                            <div className="mb-2 flex items-center justify-end gap-1 text-xs font-bold text-white/60">
+                                <span>左右にスクロールできます</span>
+                            </div>
+                        )}
+
+                        <div className="pointer-events-none absolute inset-y-8 left-0 z-10 w-8 rounded-l-2xl bg-gradient-to-r from-[rgba(0,0,0,0.35)] to-transparent" />
+                        <div className="pointer-events-none absolute inset-y-8 right-0 z-10 w-8 rounded-r-2xl bg-gradient-to-l from-[rgba(0,0,0,0.35)] to-transparent" />
+
+                        <div className="overflow-x-auto">
+                            <div className="flex min-w-max gap-2 rounded-2xl bg-black/25 p-3">
+                                {displayTimes.map((time) => (
+                                    <button
+                                        key={time}
+                                        type="button"
+                                        onClick={() =>
+                                            setFormData((prev) => ({
+                                                ...prev,
+                                                startTime: time,
+                                                course: "",
+                                                drink: "",
+                                                teppanPref: "",
+                                            }))
+                                        }
+                                        className={`shrink-0 rounded-full border px-5 py-3 text-sm font-bold transition ${formData.startTime === time
+                                                ? "border-yellow-300 bg-yellow-400 text-black"
+                                                : "border-white/20 bg-white/5 text-white hover:bg-white/10"
+                                            }`}
+                                    >
+                                        {time}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 )}
