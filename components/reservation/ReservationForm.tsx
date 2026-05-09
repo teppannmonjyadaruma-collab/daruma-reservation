@@ -494,12 +494,6 @@ function Step1DateGuestsTime({
                     </div>
                 ) : (
                     <div className="relative">
-                        {displayTimes.length > 0 && (
-                            <p className="mb-2 text-right text-xs font-bold text-white/55">
-                                ← 左右にスクロールできます →
-                            </p>
-                        )}
-
                         <div className="overflow-x-auto">
                             <div className="flex min-w-max gap-2 rounded-2xl bg-black/25 p-3">
                                 {displayTimes.map((time) => (
@@ -516,8 +510,8 @@ function Step1DateGuestsTime({
                                             }))
                                         }
                                         className={`shrink-0 rounded-full border px-5 py-3 text-sm font-bold transition ${formData.startTime === time
-                                                ? "border-yellow-300 bg-yellow-400 text-black"
-                                                : "border-white/20 bg-white/5 text-white hover:bg-white/10"
+                                            ? "border-yellow-300 bg-yellow-400 text-black"
+                                            : "border-white/20 bg-white/5 text-white hover:bg-white/10"
                                             }`}
                                     >
                                         {time}
@@ -525,6 +519,11 @@ function Step1DateGuestsTime({
                                 ))}
                             </div>
                         </div>
+                        {displayTimes.length > 0 && (
+                            <p className="mt-2 text-center text-xs font-bold text-white/50">
+                                ← 左右にスクロールできます →
+                            </p>
+                        )}
                     </div>
                 )}
 
