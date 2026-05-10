@@ -310,7 +310,7 @@ function FloatingReservationSummary({
     }
 
     return createPortal(
-        <div className="fixed left-1/2 top-[88px] z-[9000] w-[calc(100%-24px)] max-w-3xl -translate-x-1/2 pointer-events-none">
+       <div className="fixed left-1/2 top-[56px] z-[9000] w-[calc(100%-24px)] max-w-3xl -translate-x-1/2 pointer-events-none">
             <div className="rounded-[22px] border border-yellow-400/20 bg-[rgba(20,14,8,0.72)] px-4 py-3 text-white shadow-[0_10px_30px_rgba(0,0,0,0.28)] backdrop-blur-xl md:px-5">
                 {currentStep === 2 && (
                     <p className="mb-1 text-xs font-black tracking-[0.08em] text-yellow-200">
@@ -1811,9 +1811,6 @@ export default function ReservationForm() {
         }
     };
 
-    const needsFloatingSummarySpace =
-        currentStep === 2 || currentStep === 3 || currentStep === 4;
-
     const handleBack = () => {
         setError("");
 
@@ -1864,7 +1861,7 @@ export default function ReservationForm() {
                     currentStep={currentStep}
                 />
 
-                <div className={needsFloatingSummarySpace ? "pt-24 md:pt-28" : ""}>
+                <div>
                     {currentStep === 1 && (
                         <Step1DateGuestsTime
                             formData={formData}
