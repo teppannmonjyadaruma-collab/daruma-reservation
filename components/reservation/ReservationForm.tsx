@@ -1556,7 +1556,7 @@ function Step4CustomerInfo({
                 </div>
 
                 <div>
-                    <FormSectionTitle>備考</FormSectionTitle>
+                    <FormSectionTitle>ご要望・備考</FormSectionTitle>
                     <textarea
                         value={formData.note}
                         onChange={(e) => update("note", e.target.value)}
