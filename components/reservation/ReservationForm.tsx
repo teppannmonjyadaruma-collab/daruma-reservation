@@ -72,22 +72,27 @@ function getDrinkOptions(course: Course): Drink[] {
     }
 }
 
-function getTeppanOptions(adult: number, child: number): TeppanPref[] {
+function getTeppanGuidance(adult: number, child: number) {
     const total = adult + child;
+
     if (total >= 2 && total <= 4) {
-        return ["鉄板あり", "希望なし"];
+        return {
+            selectable: true,
+            message: "ご希望がある場合はお選びください。",
+        };
     }
-    return ["指定不可"];
-}
 
-function shouldSkipOptionStep(formData: ReservationFormData) {
-    const teppanOptions = getTeppanOptions(formData.adult, formData.child);
-    const drinkOptions = getDrinkOptions(formData.course);
+    if (total === 1) {
+        return {
+            selectable: false,
+            message: "1名様は専用鉄板なしのシェフ前カウンターへのご案内となります。",
+        };
+    }
 
-    const canChooseTeppan = !(teppanOptions.length === 1 && teppanOptions[0] === "指定不可");
-    const canChooseDrink = !(drinkOptions.length === 1 && drinkOptions[0] === "なし");
-
-    return !canChooseTeppan && !canChooseDrink;
+    return {
+        selectable: false,
+        message: "5名様以上は専用鉄板付き掘りごたつ席へのご案内となります。",
+    };
 }
 
 function getCourseState(params: {
@@ -1193,51 +1198,95 @@ function Step3Options({
     setFormData: React.Dispatch<React.SetStateAction<ReservationFormData>>;
 }) {
     const drinkOptions = getDrinkOptions(formData.course);
-    const teppanOptions = getTeppanOptions(formData.adult, formData.child);
-    const showDrink = !(drinkOptions.length === 1 && drinkOptions[0] === "なし");
-    const showTeppan = !(teppanOptions.length === 1 && teppanOptions[0] === "指定不可");
+    const teppanGuidance = getTeppanGuidance(formData.adult, formData.child);
+
+    const isSeatOnly = formData.course === "席のみ";
+    const teppanChoices: TeppanPref[] = ["鉄板あり", "希望なし"];
 
     return (
         <div className="space-y-8">
             <h2 className="mb-3 text-lg font-black text-yellow-300 md:text-xl">STEP5 オプションを選ぶ</h2>
 
-            {showDrink && (
-                <section>
-                    <h3 className="mb-3 text-lg font-bold text-white">飲み放題</h3>
-                    <div className="flex flex-wrap gap-2">
-                        {drinkOptions.map((option) => (
-                            <button
-                                key={option}
-                                type="button"
-                                onClick={() => setFormData((prev) => ({ ...prev, drink: option }))}
-                                className={`rounded-full border px-4 py-2 text-sm font-bold ${formData.drink === option ? "border-yellow-300 bg-yellow-400 text-black" : "border-white/20 bg-white/5 text-white"
-                                    }`}
-                            >
-                                {option}
-                            </button>
-                        ))}
-                    </div>
-                </section>
-            )}
+            <section className="rounded-[28px] border border-yellow-500/40 bg-black/25 p-4 md:p-5">
+                <h3 className="mb-2 text-lg font-black text-white">飲み放題を選ぶ</h3>
 
-            {showTeppan && (
-                <section>
-                    <h3 className="mb-3 text-lg font-bold text-white">鉄板希望</h3>
-                    <div className="flex flex-wrap gap-2">
-                        {teppanOptions.map((option) => (
+                <p
+                    className={`mb-4 text-sm leading-7 ${isSeatOnly ? "font-bold text-yellow-200" : "text-white/70"
+                        }`}
+                >
+                    {isSeatOnly
+                        ? "飲み放題はコースご予約時のみのご案内となります。"
+                        : formData.course === "だるま満喫"
+                            ? "だるま満喫コースは、90分飲み放題を追加できます。"
+                            : "このコースは、120分飲み放題を追加できます。"}
+                </p>
+
+                <div className="grid grid-cols-2 gap-3">
+                    {(isSeatOnly ? (["なし", "90"] as Drink[]) : drinkOptions).map((option) => {
+                        const label =
+                            option === "なし"
+                                ? "飲み放題なし"
+                                : option === "90"
+                                    ? "90分飲み放題を付ける"
+                                    : "120分飲み放題を付ける";
+
+                        const disabled = isSeatOnly && option !== "なし";
+
+                        return (
                             <button
                                 key={option}
                                 type="button"
-                                onClick={() => setFormData((prev) => ({ ...prev, teppanPref: option }))}
-                                className={`rounded-full border px-4 py-2 text-sm font-bold ${formData.teppanPref === option ? "border-yellow-300 bg-yellow-400 text-black" : "border-white/20 bg-white/5 text-white"
+                                disabled={disabled}
+                                onClick={() => {
+                                    if (disabled) return;
+                                    setFormData((prev) => ({ ...prev, drink: option }));
+                                }}
+                                className={`rounded-2xl border px-4 py-4 text-sm font-black transition ${disabled
+                                        ? "cursor-not-allowed border-white/10 bg-white/5 text-white/35"
+                                        : formData.drink === option
+                                            ? "border-yellow-300 bg-yellow-400 text-black"
+                                            : "border-white/20 bg-white/5 text-white hover:bg-white/10"
                                     }`}
                             >
-                                {option}
+                                {label}
                             </button>
-                        ))}
-                    </div>
-                </section>
-            )}
+                        );
+                    })}
+                </div>
+            </section>
+
+            <section className="rounded-[28px] border border-yellow-500/40 bg-black/25 p-4 md:p-5">
+                <h3 className="mb-2 text-lg font-black text-white">専用鉄板希望</h3>
+
+                <p
+                    className={`mb-4 text-sm leading-7 ${teppanGuidance.selectable ? "text-white/70" : "font-bold text-yellow-200"
+                        }`}
+                >
+                    {teppanGuidance.message}
+                </p>
+
+                <div className="grid grid-cols-2 gap-3">
+                    {teppanChoices.map((option) => (
+                        <button
+                            key={option}
+                            type="button"
+                            disabled={!teppanGuidance.selectable}
+                            onClick={() => {
+                                if (!teppanGuidance.selectable) return;
+                                setFormData((prev) => ({ ...prev, teppanPref: option }));
+                            }}
+                            className={`rounded-2xl border px-4 py-4 text-sm font-black transition ${!teppanGuidance.selectable
+                                    ? "cursor-not-allowed border-white/10 bg-white/5 text-white/35"
+                                    : formData.teppanPref === option
+                                        ? "border-yellow-300 bg-yellow-400 text-black"
+                                        : "border-white/20 bg-white/5 text-white hover:bg-white/10"
+                                }`}
+                        >
+                            {option}
+                        </button>
+                    ))}
+                </div>
+            </section>
         </div>
     );
 }
@@ -1388,17 +1437,20 @@ export default function ReservationForm() {
     }, [currentStep]);
 
     const totalGuests = formData.adult + formData.child;
-    const skipOptionStep = useMemo(() => shouldSkipOptionStep(formData), [formData]);
 
     const normalizeBeforeNext = () => {
         if (formData.course) {
             const drinkOptions = getDrinkOptions(formData.course);
-            const teppanOptions = getTeppanOptions(formData.adult, formData.child);
+            const teppanGuidance = getTeppanGuidance(formData.adult, formData.child);
 
             setFormData((prev) => ({
                 ...prev,
                 drink: drinkOptions.includes(prev.drink) ? prev.drink : drinkOptions[0] ?? "",
-                teppanPref: teppanOptions.includes(prev.teppanPref) ? prev.teppanPref : teppanOptions[0] ?? "",
+                teppanPref: teppanGuidance.selectable
+                    ? (prev.teppanPref === "鉄板あり" || prev.teppanPref === "希望なし"
+                        ? prev.teppanPref
+                        : "")
+                    : "",
             }));
         }
     };
@@ -1633,18 +1685,25 @@ export default function ReservationForm() {
         if (currentStep === 2) {
             if (!formData.course) return setError("コースを選択してください。");
             normalizeBeforeNext();
-            setCurrentStep(skipOptionStep ? 4 : 3);
+            setCurrentStep(3);
             return;
         }
 
         if (currentStep === 3) {
             const drinkOptions = getDrinkOptions(formData.course);
-            const teppanOptions = getTeppanOptions(formData.adult, formData.child);
+            const teppanGuidance = getTeppanGuidance(formData.adult, formData.child);
 
-            if (drinkOptions.length > 1 && !formData.drink) return setError("飲み放題を選択してください。");
-            if (!(teppanOptions.length === 1 && teppanOptions[0] === "指定不可") && !formData.teppanPref) {
-                return setError("鉄板希望を選択してください。");
+            const needsDrink =
+                formData.course !== "席のみ" && drinkOptions.length > 1;
+
+            if (needsDrink && !formData.drink) {
+                return setError("飲み放題を選択してください。");
             }
+
+            if (teppanGuidance.selectable && !formData.teppanPref) {
+                return setError("専用鉄板希望を選択してください。");
+            }
+
             setCurrentStep(4);
             return;
         }
@@ -1665,7 +1724,7 @@ export default function ReservationForm() {
             return;
         }
         if (currentStep === 4) {
-            setCurrentStep(skipOptionStep ? 2 : 3);
+            setCurrentStep(3);
             return;
         }
         if (currentStep === 3) {
