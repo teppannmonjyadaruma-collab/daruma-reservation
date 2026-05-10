@@ -22,8 +22,10 @@ type ReservationFormData = {
     course: Course;
     drink: Drink;
     teppanPref: TeppanPref;
-    name: string;
-    kana: string;
+    lastName: string;
+    firstName: string;
+    lastNameKana: string;
+    firstNameKana: string;
     phone: string;
     note: string;
 };
@@ -50,8 +52,10 @@ const initialFormData: ReservationFormData = {
     course: "",
     drink: "",
     teppanPref: "",
-    name: "",
-    kana: "",
+    lastName: "",
+    firstName: "",
+    lastNameKana: "",
+    firstNameKana: "",
     phone: "",
     note: "",
 };
@@ -1398,12 +1402,97 @@ function Step4CustomerInfo({
     };
 
     return (
-        <div className="space-y-5">
-            <h2 className="mb-3 text-lg font-black text-yellow-300 md:text-xl">STEP6 お客様情報を入力</h2>
-            <input value={formData.name} onChange={(e) => update("name", e.target.value)} placeholder="氏名" className="w-full rounded-xl border border-yellow-600 bg-white px-4 py-3 text-black" />
-            <input value={formData.kana} onChange={(e) => update("kana", e.target.value)} placeholder="フリガナ" className="w-full rounded-xl border border-yellow-600 bg-white px-4 py-3 text-black" />
-            <input value={formData.phone} onChange={(e) => update("phone", e.target.value)} placeholder="電話番号" className="w-full rounded-xl border border-yellow-600 bg-white px-4 py-3 text-black" />
-            <textarea value={formData.note} onChange={(e) => update("note", e.target.value)} placeholder="備考" rows={4} className="w-full rounded-xl border border-yellow-600 bg-white px-4 py-3 text-black" />
+        <div className="space-y-6">
+            <h2 className="mb-3 text-lg font-black text-yellow-300 md:text-xl">
+                STEP6 お客様情報を入力
+            </h2>
+
+            <div className="rounded-[28px] border border-yellow-500/30 bg-black/25 p-4 md:p-6">
+                <div className="mb-6">
+                    <p className="mb-3 text-base font-black text-white">代表者氏名</p>
+
+                    <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <label className="mb-2 block text-sm font-bold text-white/80">
+                                姓
+                            </label>
+                            <input
+                                value={formData.lastName}
+                                onChange={(e) => update("lastName", e.target.value)}
+                                placeholder="鉄板"
+                                className="w-full rounded-xl border border-yellow-600 bg-white px-4 py-3 text-black placeholder:text-gray-400"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="mb-2 block text-sm font-bold text-white/80">
+                                名
+                            </label>
+                            <input
+                                value={formData.firstName}
+                                onChange={(e) => update("firstName", e.target.value)}
+                                placeholder="達磨"
+                                className="w-full rounded-xl border border-yellow-600 bg-white px-4 py-3 text-black placeholder:text-gray-400"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="mt-4 grid grid-cols-2 gap-3">
+                        <div>
+                            <label className="mb-2 block text-sm font-bold text-white/80">
+                                姓（カタカナ）
+                            </label>
+                            <input
+                                value={formData.lastNameKana}
+                                onChange={(e) => update("lastNameKana", e.target.value)}
+                                placeholder="テッパン"
+                                className="w-full rounded-xl border border-yellow-600 bg-white px-4 py-3 text-black placeholder:text-gray-400"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="mb-2 block text-sm font-bold text-white/80">
+                                名（カタカナ）
+                            </label>
+                            <input
+                                value={formData.firstNameKana}
+                                onChange={(e) => update("firstNameKana", e.target.value)}
+                                placeholder="ダルマ"
+                                className="w-full rounded-xl border border-yellow-600 bg-white px-4 py-3 text-black placeholder:text-gray-400"
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <div className="mb-6">
+                    <label className="mb-2 block text-base font-black text-white">
+                        電話番号
+                    </label>
+                    <input
+                        value={formData.phone}
+                        onChange={(e) => update("phone", e.target.value)}
+                        placeholder="08001234567"
+                        inputMode="tel"
+                        className="w-full rounded-xl border border-yellow-600 bg-white px-4 py-3 text-black placeholder:text-gray-400"
+                    />
+                </div>
+
+                <div>
+                    <label className="mb-2 block text-base font-black text-white">
+                        備考
+                    </label>
+                    <textarea
+                        value={formData.note}
+                        onChange={(e) => update("note", e.target.value)}
+                        placeholder="例）マヨネーズが苦手なのでお好み焼きに掛けないでほしいです。"
+                        rows={5}
+                        className="w-full rounded-xl border border-yellow-600 bg-white px-4 py-3 text-black placeholder:text-gray-400"
+                    />
+                    <p className="mt-2 text-xs font-bold text-white/60">
+                        ※ご要望に添えぬ場合もございますのでご了承ください。
+                    </p>
+                </div>
+            </div>
         </div>
     );
 }
@@ -1421,8 +1510,14 @@ function Step5Confirm({ formData }: { formData: ReservationFormData }) {
                     <div><dt className="text-sm text-white/65">コース</dt><dd>{formData.course}</dd></div>
                     <div><dt className="text-sm text-white/65">飲み放題</dt><dd>{formData.drink}</dd></div>
                     <div><dt className="text-sm text-white/65">鉄板希望</dt><dd>{formData.teppanPref}</dd></div>
-                    <div><dt className="text-sm text-white/65">氏名</dt><dd>{formData.name}</dd></div>
-                    <div><dt className="text-sm text-white/65">フリガナ</dt><dd>{formData.kana}</dd></div>
+                    <div>
+                        <dt className="text-sm text-white/65">氏名</dt>
+                        <dd>{formData.lastName} {formData.firstName}</dd>
+                    </div>
+                    <div>
+                        <dt className="text-sm text-white/65">フリガナ</dt>
+                        <dd>{formData.lastNameKana} {formData.firstNameKana}</dd>
+                    </div>
                     <div><dt className="text-sm text-white/65">電話番号</dt><dd>{formData.phone}</dd></div>
                     <div className="md:col-span-2"><dt className="text-sm text-white/65">備考</dt><dd>{formData.note || "なし"}</dd></div>
                 </dl>
@@ -1804,10 +1899,13 @@ export default function ReservationForm() {
         }
 
         if (currentStep === 4) {
-            if (!formData.name.trim()) return setError("氏名を入力してください。");
-            if (!formData.kana.trim()) return setError("フリガナを入力してください。");
+            if (!formData.lastName.trim()) return setError("姓を入力してください。");
+            if (!formData.firstName.trim()) return setError("名を入力してください。");
+            if (!formData.lastNameKana.trim()) return setError("姓（カタカナ）を入力してください。");
+            if (!formData.firstNameKana.trim()) return setError("名（カタカナ）を入力してください。");
             if (!formData.phone.trim()) return setError("電話番号を入力してください。");
             setCurrentStep(5);
+            return;
         }
     };
 
