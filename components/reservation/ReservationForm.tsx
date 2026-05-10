@@ -603,7 +603,7 @@ function Step2Course({
                 imageGallery: ["/temp-photo.jpg"],
                 price: "",
                 seatTime: "120分",
-                deadline: "ご利用当日20:00",
+                deadline: "ランチ帯：ご利用当日13:00\nディナー帯：ご利用当日20:00",
                 items: "-",
                 guests: "1名様〜",
                 description: "コースを指定せずにお席のみのご予約になります。",
