@@ -1411,12 +1411,43 @@ function FormSectionTitle({
 function Step4CustomerInfo({
     formData,
     setFormData,
+    customerInfoErrors,
+    setCustomerInfoErrors,
 }: {
     formData: ReservationFormData;
     setFormData: React.Dispatch<React.SetStateAction<ReservationFormData>>;
+    customerInfoErrors: {
+        lastName: boolean;
+        firstName: boolean;
+        lastNameKana: boolean;
+        firstNameKana: boolean;
+        phone: boolean;
+    };
+    setCustomerInfoErrors: React.Dispatch<
+        React.SetStateAction<{
+            lastName: boolean;
+            firstName: boolean;
+            lastNameKana: boolean;
+            firstNameKana: boolean;
+            phone: boolean;
+        }>
+    >;
 }) {
     const update = (key: keyof ReservationFormData, value: string) => {
         setFormData((prev) => ({ ...prev, [key]: value }));
+
+        if (
+            key === "lastName" ||
+            key === "firstName" ||
+            key === "lastNameKana" ||
+            key === "firstNameKana" ||
+            key === "phone"
+        ) {
+            setCustomerInfoErrors((prev) => ({
+                ...prev,
+                [key]: false,
+            }));
+        }
     };
 
     return (
@@ -1438,7 +1469,10 @@ function Step4CustomerInfo({
                                 value={formData.lastName}
                                 onChange={(e) => update("lastName", e.target.value)}
                                 placeholder="鉄板"
-                                className="w-full rounded-xl border border-yellow-600 bg-white px-4 py-3 text-black placeholder:text-gray-400"
+                                className={`w-full rounded-xl border bg-white px-4 py-3 text-black placeholder:text-gray-400 ${customerInfoErrors.lastName
+                                    ? "border-red-500 ring-2 ring-red-400/40"
+                                    : "border-yellow-600"
+                                    }`}
                             />
                         </div>
 
@@ -1450,7 +1484,10 @@ function Step4CustomerInfo({
                                 value={formData.firstName}
                                 onChange={(e) => update("firstName", e.target.value)}
                                 placeholder="達磨"
-                                className="w-full rounded-xl border border-yellow-600 bg-white px-4 py-3 text-black placeholder:text-gray-400"
+                                className={`w-full rounded-xl border bg-white px-4 py-3 text-black placeholder:text-gray-400 ${customerInfoErrors.firstName
+                                    ? "border-red-500 ring-2 ring-red-400/40"
+                                    : "border-yellow-600"
+                                    }`}
                             />
                         </div>
                     </div>
@@ -1464,7 +1501,10 @@ function Step4CustomerInfo({
                                 value={formData.lastNameKana}
                                 onChange={(e) => update("lastNameKana", e.target.value)}
                                 placeholder="テッパン"
-                                className="w-full rounded-xl border border-yellow-600 bg-white px-4 py-3 text-black placeholder:text-gray-400"
+                                className={`w-full rounded-xl border bg-white px-4 py-3 text-black placeholder:text-gray-400 ${customerInfoErrors.lastNameKana
+                                    ? "border-red-500 ring-2 ring-red-400/40"
+                                    : "border-yellow-600"
+                                    }`}
                             />
                         </div>
 
@@ -1476,7 +1516,10 @@ function Step4CustomerInfo({
                                 value={formData.firstNameKana}
                                 onChange={(e) => update("firstNameKana", e.target.value)}
                                 placeholder="ダルマ"
-                                className="w-full rounded-xl border border-yellow-600 bg-white px-4 py-3 text-black placeholder:text-gray-400"
+                                className={`w-full rounded-xl border bg-white px-4 py-3 text-black placeholder:text-gray-400 ${customerInfoErrors.firstNameKana
+                                    ? "border-red-500 ring-2 ring-red-400/40"
+                                    : "border-yellow-600"
+                                    }`}
                             />
                         </div>
                     </div>
@@ -1489,7 +1532,10 @@ function Step4CustomerInfo({
                         onChange={(e) => update("phone", e.target.value)}
                         placeholder="08012345678"
                         inputMode="tel"
-                        className="w-full rounded-xl border border-yellow-600 bg-white px-4 py-3 text-black placeholder:text-gray-400"
+                        className={`w-full rounded-xl border bg-white px-4 py-3 text-black placeholder:text-gray-400 ${customerInfoErrors.phone
+                            ? "border-red-500 ring-2 ring-red-400/40"
+                            : "border-yellow-600"
+                            }`}
                     />
                 </div>
 
@@ -1595,6 +1641,20 @@ export default function ReservationForm() {
     const [dinnerDeadlinePassed, setDinnerDeadlinePassed] = useState(false);
 
     const [isPageTransitionLoading, setIsPageTransitionLoading] = useState(false);
+
+    const [customerInfoErrors, setCustomerInfoErrors] = useState<{
+        lastName: boolean;
+        firstName: boolean;
+        lastNameKana: boolean;
+        firstNameKana: boolean;
+        phone: boolean;
+    }>({
+        lastName: false,
+        firstName: false,
+        lastNameKana: false,
+        firstNameKana: false,
+        phone: false,
+    });
 
     useEffect(() => {
         const initLiff = async () => {
@@ -1918,11 +1978,22 @@ export default function ReservationForm() {
         }
 
         if (currentStep === 4) {
-            if (!formData.lastName.trim()) return setError("姓を入力してください。");
-            if (!formData.firstName.trim()) return setError("名を入力してください。");
-            if (!formData.lastNameKana.trim()) return setError("姓（カタカナ）を入力してください。");
-            if (!formData.firstNameKana.trim()) return setError("名（カタカナ）を入力してください。");
-            if (!formData.phone.trim()) return setError("電話番号を入力してください。");
+            const nextErrors = {
+                lastName: !formData.lastName.trim(),
+                firstName: !formData.firstName.trim(),
+                lastNameKana: !formData.lastNameKana.trim(),
+                firstNameKana: !formData.firstNameKana.trim(),
+                phone: !formData.phone.trim(),
+            };
+
+            setCustomerInfoErrors(nextErrors);
+
+            if (nextErrors.lastName) return setError("姓を入力してください。");
+            if (nextErrors.firstName) return setError("名を入力してください。");
+            if (nextErrors.lastNameKana) return setError("姓（カタカナ）を入力してください。");
+            if (nextErrors.firstNameKana) return setError("名（カタカナ）を入力してください。");
+            if (nextErrors.phone) return setError("電話番号を入力してください。");
+
             setCurrentStep(5);
             return;
         }
@@ -2035,6 +2106,8 @@ export default function ReservationForm() {
                         <Step4CustomerInfo
                             formData={formData}
                             setFormData={setFormData}
+                            customerInfoErrors={customerInfoErrors}
+                            setCustomerInfoErrors={setCustomerInfoErrors}
                         />
                     )}
 
