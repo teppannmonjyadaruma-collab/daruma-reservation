@@ -254,6 +254,78 @@ function StepIndicator({ currentStep }: { currentStep: Step }) {
     );
 }
 
+function ReservationSummaryBar({
+    formData,
+    showTitle = false,
+    showCourse = false,
+    showOptions = false,
+}: {
+    formData: ReservationFormData;
+    showTitle?: boolean;
+    showCourse?: boolean;
+    showOptions?: boolean;
+}) {
+    const visitTypeLabel =
+        formData.visitType === "lunch"
+            ? "ランチ"
+            : formData.visitType === "dinner"
+                ? "ディナー"
+                : "";
+
+    const mainLine = [
+        formData.visitDate,
+        `大人${formData.adult}名 子供${formData.child}名`,
+        visitTypeLabel,
+        formData.startTime ? `${formData.startTime}〜` : "",
+    ]
+        .filter(Boolean)
+        .join(" / ");
+
+    const optionTexts: string[] = [];
+
+    if (showOptions && formData.drink) {
+        optionTexts.push(`飲み放題：${formData.drink === "なし" ? "なし" : `${formData.drink}分`}`);
+    }
+
+    if (showOptions && formData.teppanPref) {
+        optionTexts.push(`専用鉄板希望：${formData.teppanPref}`);
+    }
+
+    return (
+        <div className="mb-6 rounded-[24px] border border-yellow-500/30 bg-[rgba(255,215,100,0.08)] px-4 py-4 text-white">
+            {showTitle && (
+                <p className="mb-2 text-sm font-black tracking-[0.08em] text-yellow-200">
+                    ご予約内容
+                </p>
+            )}
+
+            <p className="text-sm font-bold leading-7 text-white md:text-base">
+                {mainLine}
+            </p>
+
+            {showCourse && formData.course && (
+                <p className="mt-1 text-sm font-black leading-7 text-yellow-100 md:text-base">
+                    {formData.course === "席のみ"
+                        ? "お席のみのご予約"
+                        : formData.course === "だるま満喫"
+                            ? "だるま満喫コース"
+                            : formData.course === "鉄板満喫"
+                                ? "鉄板満喫コース"
+                                : formData.course === "特選だるま"
+                                    ? "特選だるまコース"
+                                    : ""}
+                </p>
+            )}
+
+            {showOptions && optionTexts.length > 0 && (
+                <p className="mt-1 text-sm font-bold leading-7 text-white/85">
+                    {optionTexts.join(" / ")}
+                </p>
+            )}
+        </div>
+    );
+}
+
 function Step1DateGuestsTime({
     formData,
     setFormData,
@@ -618,7 +690,7 @@ function Step2Course({
                 imageGallery: ["/temp-photo.jpg"],
                 price: "",
                 seatTime: "120分",
-                deadline: "ランチ帯：当日13:00\nディナー帯：当日20:00",
+                deadline: "ランチ：当日13:00\nディナー：当日20:00",
                 items: "-",
                 guests: "1名様〜",
                 description: "コースを指定せずにお席のみのご予約になります。",
@@ -833,6 +905,11 @@ function Step2Course({
     return (
         <div>
             <h2 className="mb-3 text-lg font-black text-yellow-300 md:text-xl">STEP4 コースを選ぶ</h2>
+
+            <ReservationSummaryBar
+                formData={formData}
+                showTitle={true}
+            />
 
             {courseAvailabilityLoading && (
                 <p className="mb-4 text-sm font-bold text-white/70">
@@ -1217,6 +1294,11 @@ function Step3Options({
         <div className="space-y-8">
             <h2 className="mb-3 text-lg font-black text-yellow-300 md:text-xl">STEP5 オプションを選ぶ</h2>
 
+            <ReservationSummaryBar
+                formData={formData}
+                showCourse={true}
+            />
+
             <section className="rounded-[28px] border border-yellow-500/40 bg-black/25 p-4 md:p-5">
                 <h3 className="mb-2 text-lg font-black text-white">飲み放題を選ぶ</h3>
 
@@ -1315,6 +1397,12 @@ function Step4CustomerInfo({
     return (
         <div className="space-y-5">
             <h2 className="mb-3 text-lg font-black text-yellow-300 md:text-xl">STEP6 お客様情報を入力</h2>
+
+            <ReservationSummaryBar
+                formData={formData}
+                showCourse={true}
+            />
+
             <input value={formData.name} onChange={(e) => update("name", e.target.value)} placeholder="氏名" className="w-full rounded-xl border border-yellow-600 bg-white px-4 py-3 text-black" />
             <input value={formData.kana} onChange={(e) => update("kana", e.target.value)} placeholder="フリガナ" className="w-full rounded-xl border border-yellow-600 bg-white px-4 py-3 text-black" />
             <input value={formData.phone} onChange={(e) => update("phone", e.target.value)} placeholder="電話番号" className="w-full rounded-xl border border-yellow-600 bg-white px-4 py-3 text-black" />
