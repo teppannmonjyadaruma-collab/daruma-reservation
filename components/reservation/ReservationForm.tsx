@@ -90,40 +90,77 @@ function shouldSkipOptionStep(formData: ReservationFormData) {
 }
 
 function getCourseState(params: {
-    isLunch: boolean;
-    available120: boolean;
-    available150: boolean;
+    formData: ReservationFormData;
+    courseAvailability: {
+        seatOnlyAvailable: boolean;
+        course120Available: boolean;
+        course150Available: boolean;
+    } | null;
 }): CourseState {
-    const { isLunch, available120, available150 } = params;
+    const { formData, courseAvailability } = params;
+
+    const isLunch = formData.visitType === "lunch";
+    const totalGuests = formData.adult + formData.child;
+    const seatOnlyAvailable = courseAvailability?.seatOnlyAvailable ?? false;
+    const course120Available = courseAvailability?.course120Available ?? false;
+    const course150Available = courseAvailability?.course150Available ?? false;
 
     if (isLunch) {
         return {
-            "席のみ": { disabled: false, reason: "" },
-            "だるま満喫": { disabled: true, reason: "ディナーの時間帯のみ選択可能です" },
-            "鉄板満喫": { disabled: true, reason: "ディナーの時間帯のみ選択可能です" },
-            "特選だるま": { disabled: true, reason: "ディナーの時間帯のみ選択可能です" },
+            "席のみ": {
+                disabled: !seatOnlyAvailable,
+                reason: !seatOnlyAvailable
+                    ? "この条件ではお席のみのご予約を承れません。"
+                    : "",
+            },
+            "だるま満喫": {
+                disabled: true,
+                reason: "ディナーのみ選択可能です",
+            },
+            "鉄板満喫": {
+                disabled: true,
+                reason: "ディナーのみ選択可能です",
+            },
+            "特選だるま": {
+                disabled: true,
+                reason: "ディナーのみ選択可能です",
+            },
         };
     }
 
     return {
-        "席のみ": { disabled: false, reason: "" },
-        "だるま満喫": {
-            disabled: !available120,
-            reason: !available120
-                ? "選択された時間帯ではこちらのコースはお席の都合上お選びいただけません。別のお時間帯をご選択ください"
+        "席のみ": {
+            disabled: !seatOnlyAvailable,
+            reason: !seatOnlyAvailable
+                ? "この条件ではお席のみのご予約を承れません。"
                 : "",
+        },
+        "だるま満喫": {
+            disabled: totalGuests < 2 || !course120Available,
+            reason:
+                totalGuests < 2
+                    ? "2名様以上でご利用いただけます"
+                    : !course120Available
+                        ? "この時間帯ではお選びいただけません"
+                        : "",
         },
         "鉄板満喫": {
-            disabled: !available150,
-            reason: !available150
-                ? "選択された時間帯ではこちらのコースはお席の都合上お選びいただけません。別のお時間帯をご選択ください"
-                : "",
+            disabled: totalGuests < 2 || !course150Available,
+            reason:
+                totalGuests < 2
+                    ? "2名様以上でご利用いただけます"
+                    : !course150Available
+                        ? "この時間帯ではお選びいただけません"
+                        : "",
         },
         "特選だるま": {
-            disabled: !available150,
-            reason: !available150
-                ? "選択された時間帯ではこちらのコースはお席の都合上お選びいただけません。別のお時間帯をご選択ください"
-                : "",
+            disabled: totalGuests < 2 || !course150Available,
+            reason:
+                totalGuests < 2
+                    ? "2名様以上でご利用いただけます"
+                    : !course150Available
+                        ? "この時間帯ではお選びいただけません"
+                        : "",
         },
     };
 }
@@ -534,12 +571,9 @@ function Step2Course({
     courseAvailabilityLoading: boolean;
     courseAvailabilityError: string;
 }) {
-    const isLunch = formData.visitType === "lunch";
-
     const courseState = getCourseState({
-        isLunch,
-        available120: courseAvailability?.course120Available ?? false,
-        available150: courseAvailability?.course150Available ?? false,
+        formData,
+        courseAvailability,
     });
 
     const courseCards: {
@@ -550,7 +584,7 @@ function Step2Course({
         imageSrc: string;
         seatTime: string;
         deadline: string;
-        items?: string;
+        items: string;
         guests: string;
         description: string;
         highlightNote?: string;
@@ -562,6 +596,7 @@ function Step2Course({
             price: "",
             seatTime: "120分",
             deadline: "ご利用当日20:00",
+            items: "-",
             guests: "1名様〜",
             description: "コースを指定せずにお席のみのご予約になります。",
         },
@@ -645,13 +680,21 @@ function Step2Course({
                             <div className="grid gap-4 md:grid-cols-[220px_1fr]">
                                 <div>
                                     <div className="mb-3 flex items-center gap-2">
-                                        <h3 className="text-xl font-black text-white">{course.title}</h3>
+                                        <h3 className="text-xl font-black tracking-wide text-yellow-200 [text-shadow:0_1px_0_rgba(255,255,255,0.12),0_2px_10px_rgba(250,204,21,0.12)]">
+                                            {course.title}
+                                        </h3>
                                         {course.badge && (
-                                            <span className="rounded-full bg-red-600 px-3 py-1 text-xs font-black text-white shadow-md">
+                                            <span className="rounded-full border border-yellow-200/40 bg-gradient-to-r from-red-700 via-red-500 to-yellow-500 px-3 py-1 text-xs font-black tracking-wide text-white shadow-[0_6px_16px_rgba(239,68,68,0.35)]">
                                                 {course.badge}
                                             </span>
                                         )}
                                     </div>
+
+                                    {state.reason && (
+                                        <p className="mb-3 rounded-2xl border border-yellow-500/20 bg-yellow-500/10 px-4 py-3 text-center text-sm font-bold text-yellow-200">
+                                            {state.reason}
+                                        </p>
+                                    )}
 
                                     <div className="aspect-square overflow-hidden rounded-2xl border border-white/10 bg-black/20">
                                         <img
@@ -669,11 +712,7 @@ function Step2Course({
                                         <div className="mb-3 h-[28px]" />
                                     )}
 
-                                    <div
-                                        className={`mb-4 grid gap-2 ${
-                                            course.items ? "grid-cols-2" : "grid-cols-3"
-                                        }`}
-                                    >
+                                    <div className="mb-4 grid grid-cols-2 gap-2">
                                         <div className="rounded-2xl border border-white/10 bg-black/20 p-3 text-center">
                                             <div className="mb-1 text-[11px] font-bold text-white/60">席時間</div>
                                             <div className="text-sm font-black text-white">{course.seatTime}</div>
@@ -684,12 +723,10 @@ function Step2Course({
                                             <div className="text-sm font-black text-white">{course.deadline}</div>
                                         </div>
 
-                                        {course.items && (
-                                            <div className="rounded-2xl border border-white/10 bg-black/20 p-3 text-center">
-                                                <div className="mb-1 text-[11px] font-bold text-white/60">コース品数</div>
-                                                <div className="text-sm font-black text-white">{course.items}</div>
-                                            </div>
-                                        )}
+                                        <div className="rounded-2xl border border-white/10 bg-black/20 p-3 text-center">
+                                            <div className="mb-1 text-[11px] font-bold text-white/60">コース品数</div>
+                                            <div className="text-sm font-black text-white">{course.items}</div>
+                                        </div>
 
                                         <div className="rounded-2xl border border-white/10 bg-black/20 p-3 text-center">
                                             <div className="mb-1 text-[11px] font-bold text-white/60">ご利用人数</div>
@@ -704,12 +741,6 @@ function Step2Course({
                                     {course.highlightNote && (
                                         <p className="mb-4 text-sm font-black leading-7 text-red-400">
                                             {course.highlightNote}
-                                        </p>
-                                    )}
-
-                                    {state.reason && (
-                                        <p className="mb-4 rounded-2xl border border-yellow-500/20 bg-yellow-500/10 px-4 py-3 text-sm font-bold text-yellow-200">
-                                            {state.reason}
                                         </p>
                                     )}
 
@@ -730,7 +761,7 @@ function Step2Course({
                                                     ? "cursor-not-allowed bg-white/10 text-white/50"
                                                     : isSelected
                                                       ? "bg-yellow-400 text-black shadow-[0_8px_20px_rgba(250,204,21,0.25)]"
-                                                      : "bg-gradient-to-r from-yellow-300 to-yellow-500 text-black hover:brightness-105"
+                                                      : "bg-gradient-to-r from-yellow-300 via-yellow-400 to-yellow-500 text-black shadow-[0_8px_18px_rgba(234,179,8,0.22)] hover:brightness-105"
                                             }`}
                                         >
                                             このコースを選ぶ
