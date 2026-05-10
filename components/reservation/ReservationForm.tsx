@@ -571,12 +571,14 @@ function Step1DateGuestsTime({
 function Step2Course({
     formData,
     setFormData,
+    setCurrentStep,
     courseAvailability,
     courseAvailabilityLoading,
     courseAvailabilityError,
 }: {
     formData: ReservationFormData;
     setFormData: React.Dispatch<React.SetStateAction<ReservationFormData>>;
+    setCurrentStep: React.Dispatch<React.SetStateAction<Step>>;
     courseAvailability: {
         seatOnlyAvailable: boolean;
         course120Available: boolean;
@@ -616,7 +618,7 @@ function Step2Course({
                 imageGallery: ["/temp-photo.jpg"],
                 price: "",
                 seatTime: "120分",
-                deadline: "ランチ帯：ご利用当日13:00\nディナー帯：ご利用当日20:00",
+                deadline: "ランチ帯：当日13:00\nディナー帯：当日20:00",
                 items: "-",
                 guests: "1名様〜",
                 description: "コースを指定せずにお席のみのご予約になります。",
@@ -921,7 +923,9 @@ function Step2Course({
 
                                         <div className="rounded-2xl border border-white/10 bg-black/20 p-3 text-center">
                                             <div className="mb-1 text-[11px] font-bold text-white/60">予約締切</div>
-                                            <div className="text-sm font-black text-white">{course.deadline}</div>
+                                            <div className="whitespace-pre-line text-sm font-black text-white">
+                                                {course.deadline}
+                                            </div>
                                         </div>
 
                                         <div className="rounded-2xl border border-white/10 bg-black/20 p-3 text-center">
@@ -949,14 +953,18 @@ function Step2Course({
                                         <button
                                             type="button"
                                             disabled={state.disabled}
-                                            onClick={() =>
+                                            onClick={() => {
+                                                if (state.disabled) return;
+
                                                 setFormData((prev) => ({
                                                     ...prev,
                                                     course: course.key,
                                                     drink: "",
                                                     teppanPref: "",
-                                                }))
-                                            }
+                                                }));
+
+                                                setCurrentStep(3);
+                                            }}
                                             className={`rounded-2xl px-5 py-3 text-sm font-black transition ${state.disabled
                                                 ? "cursor-not-allowed bg-white/10 text-white/50"
                                                 : isSelected
@@ -1161,7 +1169,9 @@ function Step2Course({
                                                         drink: "",
                                                         teppanPref: "",
                                                     }));
+
                                                     setDetailCourseKey(null);
+                                                    setCurrentStep(3);
                                                 }}
                                                 className={`rounded-2xl px-5 py-3 text-sm font-black transition ${detailState?.disabled
                                                     ? "cursor-not-allowed bg-white/10 text-white/50"
@@ -1242,10 +1252,10 @@ function Step3Options({
                                     setFormData((prev) => ({ ...prev, drink: option }));
                                 }}
                                 className={`rounded-2xl border px-4 py-4 text-sm font-black transition ${disabled
-                                        ? "cursor-not-allowed border-white/10 bg-white/5 text-white/35"
-                                        : formData.drink === option
-                                            ? "border-yellow-300 bg-yellow-400 text-black"
-                                            : "border-white/20 bg-white/5 text-white hover:bg-white/10"
+                                    ? "cursor-not-allowed border-white/10 bg-white/5 text-white/35"
+                                    : formData.drink === option
+                                        ? "border-yellow-300 bg-yellow-400 text-black"
+                                        : "border-white/20 bg-white/5 text-white hover:bg-white/10"
                                     }`}
                             >
                                 {label}
@@ -1276,10 +1286,10 @@ function Step3Options({
                                 setFormData((prev) => ({ ...prev, teppanPref: option }));
                             }}
                             className={`rounded-2xl border px-4 py-4 text-sm font-black transition ${!teppanGuidance.selectable
-                                    ? "cursor-not-allowed border-white/10 bg-white/5 text-white/35"
-                                    : formData.teppanPref === option
-                                        ? "border-yellow-300 bg-yellow-400 text-black"
-                                        : "border-white/20 bg-white/5 text-white hover:bg-white/10"
+                                ? "cursor-not-allowed border-white/10 bg-white/5 text-white/35"
+                                : formData.teppanPref === option
+                                    ? "border-yellow-300 bg-yellow-400 text-black"
+                                    : "border-white/20 bg-white/5 text-white hover:bg-white/10"
                                 }`}
                         >
                             {option}
@@ -1798,6 +1808,7 @@ export default function ReservationForm() {
                     <Step2Course
                         formData={formData}
                         setFormData={setFormData}
+                        setCurrentStep={setCurrentStep}
                         courseAvailability={courseAvailability}
                         courseAvailabilityLoading={courseAvailabilityLoading}
                         courseAvailabilityError={courseAvailabilityError}
@@ -1818,7 +1829,7 @@ export default function ReservationForm() {
                     >
                         戻る
                     </button>
-                    {currentStep !== 5 && (
+                    {currentStep !== 5 && currentStep !== 2 && (
                         <button
                             type="button"
                             onClick={handleNext}
