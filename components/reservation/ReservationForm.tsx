@@ -1396,7 +1396,7 @@ function FormSectionTitle({ children }: { children: React.ReactNode }) {
             <p className="text-lg font-black tracking-[0.04em] text-yellow-100 md:text-xl">
                 {children}
             </p>
-            <div className="mt-2 h-[3px] w-24 rounded-full bg-gradient-to-r from-yellow-200 via-yellow-400 to-yellow-700 shadow-[0_0_10px_rgba(250,204,21,0.25)]" />
+            <div className="mt-0.8 h-[3px] w-24 rounded-full bg-gradient-to-r from-yellow-200 via-yellow-400 to-yellow-700 shadow-[0_0_10px_rgba(250,204,21,0.25)]" />
         </div>
     );
 }
