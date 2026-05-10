@@ -270,6 +270,8 @@ function Step1DateGuestsTime({
     dayAvailabilityError,
     lunchAvailableTimes,
     dinnerAvailableTimes,
+    lunchDeadlinePassed,
+    dinnerDeadlinePassed,
 }: {
     formData: ReservationFormData;
     setFormData: React.Dispatch<React.SetStateAction<ReservationFormData>>;
@@ -291,6 +293,8 @@ function Step1DateGuestsTime({
     dayAvailabilityError: string;
     lunchAvailableTimes: string[];
     dinnerAvailableTimes: string[];
+    lunchDeadlinePassed: boolean;
+    dinnerDeadlinePassed: boolean;
 }) {
     const displayTimes =
         formData.visitType === "lunch"
@@ -510,7 +514,11 @@ function Step1DateGuestsTime({
                     formData.visitType &&
                     displayTimes.length === 0 && (
                         <div className="mb-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-5 text-sm text-white/75">
-                            この条件で選択できる時間帯がありません。日付・人数・ランチ / ディナーを変更してお試しください。
+                            {formData.visitType === "lunch" && lunchDeadlinePassed
+                                ? "本日のランチの受付は終了しました。日付・人数・ランチ / ディナーを変更してお試しください。"
+                                : formData.visitType === "dinner" && dinnerDeadlinePassed
+                                    ? "本日のディナーの受付は終了しました。日付・人数・ランチ / ディナーを変更してお試しください。"
+                                    : "この条件で選択できる時間帯がありません。日付・人数・ランチ / ディナーを変更してお試しください。"}
                         </div>
                     )}
 
@@ -1325,6 +1333,9 @@ export default function ReservationForm() {
         course150Available: boolean;
     } | null>(null);
 
+    const [lunchDeadlinePassed, setLunchDeadlinePassed] = useState(false);
+    const [dinnerDeadlinePassed, setDinnerDeadlinePassed] = useState(false);
+
     const [isPageTransitionLoading, setIsPageTransitionLoading] = useState(false);
 
     useEffect(() => {
@@ -1442,6 +1453,14 @@ export default function ReservationForm() {
             return;
         }
 
+        setLunchDeadlinePassed(false);
+        setDinnerDeadlinePassed(false);
+
+        setCourseAvailability(null);
+        setCourseAvailabilityError("");
+        setCourseAvailabilityLoading(false);
+        setError("");
+
         setFormData((prev) => ({
             ...prev,
             visitType,
@@ -1461,11 +1480,15 @@ export default function ReservationForm() {
 
             setLunchAvailableTimes(result.lunchAvailableTimes ?? []);
             setDinnerAvailableTimes(result.dinnerAvailableTimes ?? []);
+            setLunchDeadlinePassed(result.lunchDeadlinePassed ?? false);
+            setDinnerDeadlinePassed(result.dinnerDeadlinePassed ?? false);
         } catch (error) {
             console.error("loadDayAvailability error:", error);
             setDayAvailabilityError("この日の空き時間取得に失敗しました。");
             setLunchAvailableTimes([]);
             setDinnerAvailableTimes([]);
+            setLunchDeadlinePassed(false);
+            setDinnerDeadlinePassed(false);
         } finally {
             setDayAvailabilityLoading(false);
         }
@@ -1474,6 +1497,8 @@ export default function ReservationForm() {
     const handleGuestChange = (type: "adult" | "child", value: number) => {
         setLunchAvailableTimes([]);
         setDinnerAvailableTimes([]);
+        setLunchDeadlinePassed(false);
+        setDinnerDeadlinePassed(false);
         setDayAvailabilityError("");
         setDayAvailabilityLoading(false);
 
@@ -1496,6 +1521,8 @@ export default function ReservationForm() {
     const handleDateChange = (date: string) => {
         setLunchAvailableTimes([]);
         setDinnerAvailableTimes([]);
+        setLunchDeadlinePassed(false);
+        setDinnerDeadlinePassed(false);
         setDayAvailabilityError("");
         setDayAvailabilityLoading(false);
 
@@ -1519,6 +1546,10 @@ export default function ReservationForm() {
         setCourseAvailability(null);
         setCourseAvailabilityError("");
         setCourseAvailabilityLoading(false);
+
+        setLunchDeadlinePassed(false);
+        setDinnerDeadlinePassed(false);
+
         setError("");
 
         setFormData((prev) => ({
@@ -1700,6 +1731,8 @@ export default function ReservationForm() {
                         dayAvailabilityError={dayAvailabilityError}
                         lunchAvailableTimes={lunchAvailableTimes}
                         dinnerAvailableTimes={dinnerAvailableTimes}
+                        lunchDeadlinePassed={lunchDeadlinePassed}
+                        dinnerDeadlinePassed={dinnerDeadlinePassed}
                     />
                 )}
                 {currentStep === 2 && (
