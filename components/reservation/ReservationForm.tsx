@@ -254,17 +254,17 @@ function StepIndicator({ currentStep }: { currentStep: Step }) {
     );
 }
 
-function ReservationSummaryBar({
+function FloatingReservationSummary({
     formData,
-    showTitle = false,
-    showCourse = false,
-    showOptions = false,
+    currentStep,
 }: {
     formData: ReservationFormData;
-    showTitle?: boolean;
-    showCourse?: boolean;
-    showOptions?: boolean;
+    currentStep: Step;
 }) {
+    if (currentStep === 1 || currentStep === 5) {
+        return null;
+    }
+
     const visitTypeLabel =
         formData.visitType === "lunch"
             ? "ランチ"
@@ -281,47 +281,54 @@ function ReservationSummaryBar({
         .filter(Boolean)
         .join(" / ");
 
+    const courseLabel =
+        formData.course === "席のみ"
+            ? "お席のみのご予約"
+            : formData.course === "だるま満喫"
+                ? "だるま満喫コース"
+                : formData.course === "鉄板満喫"
+                    ? "鉄板満喫コース"
+                    : formData.course === "特選だるま"
+                        ? "特選だるまコース"
+                        : "";
+
     const optionTexts: string[] = [];
 
-    if (showOptions && formData.drink) {
-        optionTexts.push(`飲み放題：${formData.drink === "なし" ? "なし" : `${formData.drink}分`}`);
+    if (currentStep === 4 && formData.drink) {
+        optionTexts.push(
+            `飲み放題：${formData.drink === "なし" ? "なし" : `${formData.drink}分`}`
+        );
     }
 
-    if (showOptions && formData.teppanPref) {
+    if (currentStep === 4 && formData.teppanPref) {
         optionTexts.push(`専用鉄板希望：${formData.teppanPref}`);
     }
 
     return (
-        <div className="mb-6 rounded-[24px] border border-yellow-500/30 bg-[rgba(255,215,100,0.08)] px-4 py-4 text-white">
-            {showTitle && (
-                <p className="mb-2 text-sm font-black tracking-[0.08em] text-yellow-200">
-                    ご予約内容
-                </p>
-            )}
+        <div className="fixed left-1/2 top-20 z-[9000] w-[calc(100%-24px)] max-w-3xl -translate-x-1/2">
+            <div className="rounded-[22px] border border-yellow-400/20 bg-[rgba(20,14,8,0.72)] px-4 py-3 text-white shadow-[0_10px_30px_rgba(0,0,0,0.28)] backdrop-blur-xl md:px-5">
+                {currentStep === 2 && (
+                    <p className="mb-1 text-xs font-black tracking-[0.08em] text-yellow-200">
+                        ご予約内容
+                    </p>
+                )}
 
-            <p className="text-sm font-bold leading-7 text-white md:text-base">
-                {mainLine}
-            </p>
-
-            {showCourse && formData.course && (
-                <p className="mt-1 text-sm font-black leading-7 text-yellow-100 md:text-base">
-                    {formData.course === "席のみ"
-                        ? "お席のみのご予約"
-                        : formData.course === "だるま満喫"
-                            ? "だるま満喫コース"
-                            : formData.course === "鉄板満喫"
-                                ? "鉄板満喫コース"
-                                : formData.course === "特選だるま"
-                                    ? "特選だるまコース"
-                                    : ""}
+                <p className="text-sm font-bold leading-6 text-white md:text-base">
+                    {mainLine}
                 </p>
-            )}
 
-            {showOptions && optionTexts.length > 0 && (
-                <p className="mt-1 text-sm font-bold leading-7 text-white/85">
-                    {optionTexts.join(" / ")}
-                </p>
-            )}
+                {(currentStep === 3 || currentStep === 4) && courseLabel && (
+                    <p className="mt-1 text-sm font-black leading-6 text-yellow-100 md:text-base">
+                        {courseLabel}
+                    </p>
+                )}
+
+                {currentStep === 4 && optionTexts.length > 0 && (
+                    <p className="mt-1 text-sm font-bold leading-6 text-white/85">
+                        {optionTexts.join(" / ")}
+                    </p>
+                )}
+            </div>
         </div>
     );
 }
@@ -906,11 +913,6 @@ function Step2Course({
         <div>
             <h2 className="mb-3 text-lg font-black text-yellow-300 md:text-xl">STEP4 コースを選ぶ</h2>
 
-            <ReservationSummaryBar
-                formData={formData}
-                showTitle={true}
-            />
-
             {courseAvailabilityLoading && (
                 <p className="mb-4 text-sm font-bold text-white/70">
                     コース選択可否を確認中です...
@@ -1294,11 +1296,6 @@ function Step3Options({
         <div className="space-y-8">
             <h2 className="mb-3 text-lg font-black text-yellow-300 md:text-xl">STEP5 オプションを選ぶ</h2>
 
-            <ReservationSummaryBar
-                formData={formData}
-                showCourse={true}
-            />
-
             <section className="rounded-[28px] border border-yellow-500/40 bg-black/25 p-4 md:p-5">
                 <h3 className="mb-2 text-lg font-black text-white">飲み放題を選ぶ</h3>
 
@@ -1397,12 +1394,6 @@ function Step4CustomerInfo({
     return (
         <div className="space-y-5">
             <h2 className="mb-3 text-lg font-black text-yellow-300 md:text-xl">STEP6 お客様情報を入力</h2>
-
-            <ReservationSummaryBar
-                formData={formData}
-                showCourse={true}
-            />
-
             <input value={formData.name} onChange={(e) => update("name", e.target.value)} placeholder="氏名" className="w-full rounded-xl border border-yellow-600 bg-white px-4 py-3 text-black" />
             <input value={formData.kana} onChange={(e) => update("kana", e.target.value)} placeholder="フリガナ" className="w-full rounded-xl border border-yellow-600 bg-white px-4 py-3 text-black" />
             <input value={formData.phone} onChange={(e) => update("phone", e.target.value)} placeholder="電話番号" className="w-full rounded-xl border border-yellow-600 bg-white px-4 py-3 text-black" />
@@ -1814,6 +1805,9 @@ export default function ReservationForm() {
         }
     };
 
+    const needsFloatingSummarySpace =
+        currentStep === 2 || currentStep === 3 || currentStep === 4;
+
     const handleBack = () => {
         setError("");
 
@@ -1859,52 +1853,73 @@ export default function ReservationForm() {
             <div className="rounded-[27px] bg-[rgba(0,0,0,0.58)] p-4 text-white backdrop-blur-[2px] md:p-8">
                 <StepIndicator currentStep={currentStep} />
 
-                {currentStep === 1 && (
-                    <Step1DateGuestsTime
-                        formData={formData}
-                        setFormData={setFormData}
-                        calendarYear={calendarYear}
-                        calendarMonth={calendarMonth}
-                        onPrevMonth={handlePrevMonth}
-                        onNextMonth={handleNextMonth}
-                        disablePrevMonth={isAtMinMonth}
-                        disableNextMonth={isAtMaxMonth}
-                        calendarMessage={calendarMessage}
-                        calendarStatusMap={calendarStatusMap}
-                        calendarStatusLoading={calendarStatusLoading}
-                        calendarStatusError={calendarStatusError}
-                        onGuestChange={handleGuestChange}
-                        onDateChange={handleDateChange}
-                        onStartTimeChange={handleStartTimeChange}
-                        onSelectVisitType={(visitType) =>
-                            loadDayAvailability(
-                                visitType,
-                                formData.visitDate,
-                                formData.adult,
-                                formData.child
-                            )
-                        }
-                        dayAvailabilityLoading={dayAvailabilityLoading}
-                        dayAvailabilityError={dayAvailabilityError}
-                        lunchAvailableTimes={lunchAvailableTimes}
-                        dinnerAvailableTimes={dinnerAvailableTimes}
-                        lunchDeadlinePassed={lunchDeadlinePassed}
-                        dinnerDeadlinePassed={dinnerDeadlinePassed}
-                    />
-                )}
-                {currentStep === 2 && (
-                    <Step2Course
-                        formData={formData}
-                        setFormData={setFormData}
-                        setCurrentStep={setCurrentStep}
-                        courseAvailability={courseAvailability}
-                        courseAvailabilityLoading={courseAvailabilityLoading}
-                        courseAvailabilityError={courseAvailabilityError}
-                    />
-                )}
-                {currentStep === 3 && <Step3Options formData={formData} setFormData={setFormData} />}
-                {currentStep === 4 && <Step4CustomerInfo formData={formData} setFormData={setFormData} />}
-                {currentStep === 5 && <Step5Confirm formData={formData} />}
+                <FloatingReservationSummary
+                    formData={formData}
+                    currentStep={currentStep}
+                />
+
+                <div className={needsFloatingSummarySpace ? "pt-24 md:pt-28" : ""}>
+                    {currentStep === 1 && (
+                        <Step1DateGuestsTime
+                            formData={formData}
+                            setFormData={setFormData}
+                            calendarYear={calendarYear}
+                            calendarMonth={calendarMonth}
+                            onPrevMonth={handlePrevMonth}
+                            onNextMonth={handleNextMonth}
+                            disablePrevMonth={isAtMinMonth}
+                            disableNextMonth={isAtMaxMonth}
+                            calendarMessage={calendarMessage}
+                            calendarStatusMap={calendarStatusMap}
+                            calendarStatusLoading={calendarStatusLoading}
+                            calendarStatusError={calendarStatusError}
+                            onGuestChange={handleGuestChange}
+                            onDateChange={handleDateChange}
+                            onStartTimeChange={handleStartTimeChange}
+                            onSelectVisitType={(visitType) =>
+                                loadDayAvailability(
+                                    visitType,
+                                    formData.visitDate,
+                                    formData.adult,
+                                    formData.child
+                                )
+                            }
+                            dayAvailabilityLoading={dayAvailabilityLoading}
+                            dayAvailabilityError={dayAvailabilityError}
+                            lunchAvailableTimes={lunchAvailableTimes}
+                            dinnerAvailableTimes={dinnerAvailableTimes}
+                            lunchDeadlinePassed={lunchDeadlinePassed}
+                            dinnerDeadlinePassed={dinnerDeadlinePassed}
+                        />
+                    )}
+
+                    {currentStep === 2 && (
+                        <Step2Course
+                            formData={formData}
+                            setFormData={setFormData}
+                            setCurrentStep={setCurrentStep}
+                            courseAvailability={courseAvailability}
+                            courseAvailabilityLoading={courseAvailabilityLoading}
+                            courseAvailabilityError={courseAvailabilityError}
+                        />
+                    )}
+
+                    {currentStep === 3 && (
+                        <Step3Options
+                            formData={formData}
+                            setFormData={setFormData}
+                        />
+                    )}
+
+                    {currentStep === 4 && (
+                        <Step4CustomerInfo
+                            formData={formData}
+                            setFormData={setFormData}
+                        />
+                    )}
+
+                    {currentStep === 5 && <Step5Confirm formData={formData} />}
+                </div>
 
                 {error && <p className="mt-6 rounded-xl bg-red-950/70 px-4 py-3 text-sm font-bold text-red-200">{error}</p>}
 
