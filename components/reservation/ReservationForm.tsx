@@ -322,18 +322,18 @@ function FloatingReservationSummary({
                     </p>
                 )}
 
-                <p className="text-sm font-bold leading-6 text-white md:text-base">
+                <p className="text-sm font-bold leading-5 text-white md:text-base">
                     {mainLine}
                 </p>
 
                 {(currentStep === 3 || currentStep === 4) && courseLabel && (
-                    <p className="mt-1 text-sm font-black leading-6 text-yellow-100 md:text-base">
+                    <p className="mt-1 text-sm font-bold leading-5 text-white md:text-base">
                         {courseLabel}
                     </p>
                 )}
 
                 {currentStep === 4 && optionTexts.length > 0 && (
-                    <p className="mt-1 text-sm font-bold leading-6 text-white/85">
+                    <p className="mt-1 text-sm font-bold leading-5 text-white/85">
                         {optionTexts.join(" / ")}
                     </p>
                 )}
@@ -1409,7 +1409,9 @@ function Step4CustomerInfo({
 
             <div className="rounded-[28px] border border-yellow-500/30 bg-black/25 p-4 md:p-6">
                 <div className="mb-6">
-                    <p className="mb-3 text-base font-black text-white">代表者氏名</p>
+                    <p className="mb-4 text-lg font-black tracking-[0.04em] text-yellow-100">
+                        代表者氏名
+                    </p>
 
                     <div className="grid grid-cols-2 gap-3">
                         <div>
@@ -1465,7 +1467,7 @@ function Step4CustomerInfo({
                 </div>
 
                 <div className="mb-6">
-                    <label className="mb-2 block text-base font-black text-white">
+                    <label className="mb-3 block text-lg font-black tracking-[0.04em] text-yellow-100">
                         電話番号
                     </label>
                     <input
@@ -1478,7 +1480,7 @@ function Step4CustomerInfo({
                 </div>
 
                 <div>
-                    <label className="mb-2 block text-base font-black text-white">
+                    <label className="mb-3 block text-lg font-black tracking-[0.04em] text-yellow-100">
                         備考
                     </label>
                     <textarea
