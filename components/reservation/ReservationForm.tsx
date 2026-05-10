@@ -310,7 +310,7 @@ function FloatingReservationSummary({
     }
 
     return createPortal(
-       <div className="fixed left-1/2 top-[56px] z-[9000] w-[calc(100%-24px)] max-w-3xl -translate-x-1/2 pointer-events-none">
+       <div className="fixed left-1/2 top-[44px] z-[9000] w-[calc(100%-24px)] max-w-3xl -translate-x-1/2 pointer-events-none">
             <div className="rounded-[22px] border border-yellow-400/20 bg-[rgba(20,14,8,0.72)] px-4 py-3 text-white shadow-[0_10px_30px_rgba(0,0,0,0.28)] backdrop-blur-xl md:px-5">
                 {currentStep === 2 && (
                     <p className="mb-1 text-xs font-black tracking-[0.08em] text-yellow-200">
@@ -703,7 +703,7 @@ function Step2Course({
                 imageGallery: ["/temp-photo.jpg"],
                 price: "",
                 seatTime: "120分",
-                deadline: "ランチ：当日13:00\nディナー：当日20:00",
+                deadline: "昼：当日13:00\n夜：当日20:00",
                 items: "-",
                 guests: "1名様〜",
                 description: "コースを指定せずにお席のみのご予約になります。",
