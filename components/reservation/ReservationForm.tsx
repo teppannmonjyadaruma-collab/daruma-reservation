@@ -1390,6 +1390,17 @@ function Step3Options({
     );
 }
 
+function FormSectionTitle({ children }: { children: React.ReactNode }) {
+    return (
+        <div className="mb-4">
+            <p className="text-lg font-black tracking-[0.04em] text-yellow-100 md:text-xl">
+                {children}
+            </p>
+            <div className="mt-2 h-[3px] w-24 rounded-full bg-gradient-to-r from-yellow-200 via-yellow-400 to-yellow-700 shadow-[0_0_10px_rgba(250,204,21,0.25)]" />
+        </div>
+    );
+}
+
 function Step4CustomerInfo({
     formData,
     setFormData,
@@ -1409,9 +1420,7 @@ function Step4CustomerInfo({
 
             <div className="rounded-[28px] border border-yellow-500/30 bg-black/25 p-4 md:p-6">
                 <div className="mb-6">
-                    <p className="mb-4 text-lg font-black tracking-[0.04em] text-yellow-100">
-                        代表者氏名
-                    </p>
+                    <FormSectionTitle>代表者氏名</FormSectionTitle>
 
                     <div className="grid grid-cols-2 gap-3">
                         <div>
@@ -1467,22 +1476,18 @@ function Step4CustomerInfo({
                 </div>
 
                 <div className="mb-6">
-                    <label className="mb-3 block text-lg font-black tracking-[0.04em] text-yellow-100">
-                        電話番号
-                    </label>
+                    <FormSectionTitle>電話番号</FormSectionTitle>
                     <input
                         value={formData.phone}
                         onChange={(e) => update("phone", e.target.value)}
-                        placeholder="08001234567"
+                        placeholder="08012345678"
                         inputMode="tel"
                         className="w-full rounded-xl border border-yellow-600 bg-white px-4 py-3 text-black placeholder:text-gray-400"
                     />
                 </div>
 
                 <div>
-                    <label className="mb-3 block text-lg font-black tracking-[0.04em] text-yellow-100">
-                        備考
-                    </label>
+                    <FormSectionTitle>備考</FormSectionTitle>
                     <textarea
                         value={formData.note}
                         onChange={(e) => update("note", e.target.value)}
