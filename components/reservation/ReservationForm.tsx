@@ -261,9 +261,14 @@ function FloatingReservationSummary({
     formData: ReservationFormData;
     currentStep: Step;
 }) {
-    if (currentStep === 1 || currentStep === 5) {
-        return null;
-    }
+    const [isMounted, setIsMounted] = useState(false);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
+    if (!isMounted) return null;
+    if (currentStep === 1 || currentStep === 5) return null;
 
     const visitTypeLabel =
         formData.visitType === "lunch"
@@ -304,8 +309,8 @@ function FloatingReservationSummary({
         optionTexts.push(`専用鉄板希望：${formData.teppanPref}`);
     }
 
-    return (
-        <div className="fixed left-1/2 top-20 z-[9000] w-[calc(100%-24px)] max-w-3xl -translate-x-1/2">
+    return createPortal(
+        <div className="fixed left-1/2 top-[88px] z-[9000] w-[calc(100%-24px)] max-w-3xl -translate-x-1/2 pointer-events-none">
             <div className="rounded-[22px] border border-yellow-400/20 bg-[rgba(20,14,8,0.72)] px-4 py-3 text-white shadow-[0_10px_30px_rgba(0,0,0,0.28)] backdrop-blur-xl md:px-5">
                 {currentStep === 2 && (
                     <p className="mb-1 text-xs font-black tracking-[0.08em] text-yellow-200">
@@ -329,7 +334,8 @@ function FloatingReservationSummary({
                     </p>
                 )}
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }
 
