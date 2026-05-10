@@ -4,6 +4,8 @@ export type DayAvailabilityDetail = {
     child: number;
     lunchAvailableTimes: string[];
     dinnerAvailableTimes: string[];
+    lunchDeadlinePassed: boolean;
+    dinnerDeadlinePassed: boolean;
     holidayName: string;
     businessType: "22close" | "23close" | "closed";
 };
