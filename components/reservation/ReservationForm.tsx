@@ -592,9 +592,25 @@ function Step1DateGuestsTime({
                 <h2 className="mb-3 text-lg font-black text-yellow-300 md:text-xl">STEP4 時間帯を選ぶ</h2>
 
                 {dayAvailabilityLoading && (
-                    <p className="mb-3 text-sm font-bold text-white/70">
-                        選択日の空き時間を取得中です...
-                    </p>
+                    <div className="mb-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-4">
+                        <div className="flex items-center gap-3">
+                            <div className="h-5 w-5 animate-spin rounded-full border-2 border-yellow-300/30 border-t-yellow-300" />
+                            <div>
+                                <p className="text-sm font-black text-white/85">
+                                    選択日の空き時間を確認しています
+                                </p>
+                                <p className="text-xs font-bold text-white/50">
+                                    少々お待ちください...
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="mt-4 flex gap-2 overflow-hidden">
+                            <div className="h-11 w-24 animate-pulse rounded-full border border-white/10 bg-white/5" />
+                            <div className="h-11 w-24 animate-pulse rounded-full border border-white/10 bg-white/5" />
+                            <div className="h-11 w-24 animate-pulse rounded-full border border-white/10 bg-white/5" />
+                        </div>
+                    </div>
                 )}
 
                 {dayAvailabilityError && (
