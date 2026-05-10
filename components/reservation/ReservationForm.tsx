@@ -1560,7 +1560,7 @@ function Step4CustomerInfo({
                     <textarea
                         value={formData.note}
                         onChange={(e) => update("note", e.target.value)}
-                        placeholder="例）マヨネーズが苦手なのでお好み焼きに掛けないでほしいです。"
+                        placeholder="例）マヨネーズが苦手なのでお好み焼きにかけないでほしいです。"
                         rows={5}
                         className="w-full rounded-xl border border-yellow-600 bg-white px-4 py-3 text-black placeholder:text-gray-400"
                     />
