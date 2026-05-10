@@ -542,7 +542,73 @@ function Step2Course({
         available150: courseAvailability?.course150Available ?? false,
     });
 
-    const cards: Exclude<Course, "">[] = ["席のみ", "だるま満喫", "鉄板満喫", "特選だるま"];
+    const courseCards: {
+        key: Exclude<Course, "">;
+        title: string;
+        badge?: string;
+        price?: string;
+        imageSrc: string;
+        seatTime: string;
+        deadline: string;
+        items?: string;
+        guests: string;
+        description: string;
+        highlightNote?: string;
+    }[] = [
+        {
+            key: "席のみ",
+            title: "お席のみのご予約",
+            imageSrc: "/temp-photo.jpg",
+            price: "",
+            seatTime: "120分",
+            deadline: "ご利用当日20:00",
+            guests: "1名様〜",
+            description: "コースを指定せずにお席のみのご予約になります。",
+        },
+        {
+            key: "だるま満喫",
+            title: "だるま満喫コース",
+            badge: "おすすめ",
+            imageSrc: "/temp-photo.jpg",
+            price: "2,980円（税込）／1名様",
+            seatTime: "150分",
+            deadline: "ご利用前日22:00",
+            items: "9品",
+            guests: "2名様〜",
+            description:
+                "後ほど差し替えます。サンプルテキスト。サンプルテキスト。サンプルテキスト。サンプルテキスト。サンプルテキスト。サンプルテキスト。",
+            highlightNote:
+                "お一人様＋1,500円（税込）で90分飲み放題がお選びいただけます！",
+        },
+        {
+            key: "鉄板満喫",
+            title: "鉄板満喫コース",
+            imageSrc: "/temp-photo.jpg",
+            price: "3,980円（税込）／1名様",
+            seatTime: "150分",
+            deadline: "ご利用前日22:00",
+            items: "10品",
+            guests: "2名様〜",
+            description:
+                "後ほど差し替えます。サンプルテキスト。サンプルテキスト。サンプルテキスト。サンプルテキスト。サンプルテキスト。サンプルテキスト。",
+            highlightNote:
+                "お一人様＋2,000円（税込）で120分飲み放題がお選びいただけます！",
+        },
+        {
+            key: "特選だるま",
+            title: "特選だるまコース",
+            imageSrc: "/temp-photo.jpg",
+            price: "5,980円（税込）／1名様",
+            seatTime: "150分",
+            deadline: "ご利用前日22:00",
+            items: "12品",
+            guests: "2名様〜",
+            description:
+                "後ほど差し替えます。サンプルテキスト。サンプルテキスト。サンプルテキスト。サンプルテキスト。サンプルテキスト。サンプルテキスト。",
+            highlightNote:
+                "お一人様＋2,000円（税込）で120分飲み放題がお選びいただけます！",
+        },
+    ];
 
     return (
         <div>
@@ -560,60 +626,124 @@ function Step2Course({
                 </p>
             )}
 
-            <div className="grid gap-4 md:grid-cols-2">
-                {cards.map((course) => {
-                    const state = courseState[course];
+            <div className="grid gap-5">
+                {courseCards.map((course) => {
+                    const state = courseState[course.key];
+                    const isSelected = formData.course === course.key;
 
                     return (
                         <div
-                            key={course}
-                            className={`rounded-2xl border p-4 ${state.disabled
-                                ? "border-white/10 bg-white/5 opacity-60"
-                                : "border-yellow-500 bg-black/25"
-                                }`}
+                            key={course.key}
+                            className={`overflow-hidden rounded-[28px] border p-4 transition md:p-5 ${
+                                state.disabled
+                                    ? "border-white/10 bg-white/5 opacity-60"
+                                    : isSelected
+                                      ? "border-yellow-300 bg-[rgba(255,220,90,0.08)] shadow-[0_0_0_1px_rgba(253,224,71,0.25)]"
+                                      : "border-yellow-500/60 bg-black/25"
+                            }`}
                         >
-                            <div className="mb-3 text-lg font-black text-white">{course}</div>
+                            <div className="grid gap-4 md:grid-cols-[220px_1fr]">
+                                <div>
+                                    <div className="mb-3 flex items-center gap-2">
+                                        <h3 className="text-xl font-black text-white">{course.title}</h3>
+                                        {course.badge && (
+                                            <span className="rounded-full bg-red-600 px-3 py-1 text-xs font-black text-white shadow-md">
+                                                {course.badge}
+                                            </span>
+                                        )}
+                                    </div>
 
-                            <div className="mb-4 text-sm text-white/75">
-                                {course === "席のみ"
-                                    ? "お席のみのご予約です。"
-                                    : "コース詳細ページへ遷移する導線を後で追加予定。"}
-                            </div>
+                                    <div className="aspect-square overflow-hidden rounded-2xl border border-white/10 bg-black/20">
+                                        <img
+                                            src={course.imageSrc}
+                                            alt={course.title}
+                                            className="h-full w-full object-cover"
+                                        />
+                                    </div>
+                                </div>
 
-                            {state.reason && (
-                                <p className="mb-3 text-xs text-yellow-200">{state.reason}</p>
-                            )}
+                                <div className="flex flex-col">
+                                    {course.price ? (
+                                        <p className="mb-3 text-lg font-black text-yellow-200">{course.price}</p>
+                                    ) : (
+                                        <div className="mb-3 h-[28px]" />
+                                    )}
 
-                            <div className="flex gap-2">
-                                <button
-                                    type="button"
-                                    disabled={state.disabled}
-                                    onClick={() =>
-                                        setFormData((prev) => ({
-                                            ...prev,
-                                            course,
-                                            drink: "",
-                                            teppanPref: "",
-                                        }))
-                                    }
-                                    className={`rounded-xl px-4 py-2 text-sm font-bold ${state.disabled
-                                        ? "bg-white/10 text-white/60"
-                                        : formData.course === course
-                                            ? "bg-yellow-400 text-black"
-                                            : "bg-white text-black"
+                                    <div
+                                        className={`mb-4 grid gap-2 ${
+                                            course.items ? "grid-cols-2" : "grid-cols-3"
                                         }`}
-                                >
-                                    このコースを選ぶ
-                                </button>
-
-                                {course !== "席のみ" && (
-                                    <button
-                                        type="button"
-                                        className="rounded-xl border border-white/20 px-4 py-2 text-sm font-bold text-white"
                                     >
-                                        詳細を見る
-                                    </button>
-                                )}
+                                        <div className="rounded-2xl border border-white/10 bg-black/20 p-3 text-center">
+                                            <div className="mb-1 text-[11px] font-bold text-white/60">席時間</div>
+                                            <div className="text-sm font-black text-white">{course.seatTime}</div>
+                                        </div>
+
+                                        <div className="rounded-2xl border border-white/10 bg-black/20 p-3 text-center">
+                                            <div className="mb-1 text-[11px] font-bold text-white/60">予約締切</div>
+                                            <div className="text-sm font-black text-white">{course.deadline}</div>
+                                        </div>
+
+                                        {course.items && (
+                                            <div className="rounded-2xl border border-white/10 bg-black/20 p-3 text-center">
+                                                <div className="mb-1 text-[11px] font-bold text-white/60">コース品数</div>
+                                                <div className="text-sm font-black text-white">{course.items}</div>
+                                            </div>
+                                        )}
+
+                                        <div className="rounded-2xl border border-white/10 bg-black/20 p-3 text-center">
+                                            <div className="mb-1 text-[11px] font-bold text-white/60">ご利用人数</div>
+                                            <div className="text-sm font-black text-white">{course.guests}</div>
+                                        </div>
+                                    </div>
+
+                                    <p className="mb-3 text-sm leading-7 text-white/85">
+                                        {course.description}
+                                    </p>
+
+                                    {course.highlightNote && (
+                                        <p className="mb-4 text-sm font-black leading-7 text-red-400">
+                                            {course.highlightNote}
+                                        </p>
+                                    )}
+
+                                    {state.reason && (
+                                        <p className="mb-4 rounded-2xl border border-yellow-500/20 bg-yellow-500/10 px-4 py-3 text-sm font-bold text-yellow-200">
+                                            {state.reason}
+                                        </p>
+                                    )}
+
+                                    <div className="mt-auto flex flex-col gap-3 sm:flex-row">
+                                        <button
+                                            type="button"
+                                            disabled={state.disabled}
+                                            onClick={() =>
+                                                setFormData((prev) => ({
+                                                    ...prev,
+                                                    course: course.key,
+                                                    drink: "",
+                                                    teppanPref: "",
+                                                }))
+                                            }
+                                            className={`rounded-2xl px-5 py-3 text-sm font-black transition ${
+                                                state.disabled
+                                                    ? "cursor-not-allowed bg-white/10 text-white/50"
+                                                    : isSelected
+                                                      ? "bg-yellow-400 text-black shadow-[0_8px_20px_rgba(250,204,21,0.25)]"
+                                                      : "bg-gradient-to-r from-yellow-300 to-yellow-500 text-black hover:brightness-105"
+                                            }`}
+                                        >
+                                            このコースを選ぶ
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            className="rounded-2xl border border-white/20 bg-white/5 px-5 py-3 text-sm font-black text-white transition hover:bg-white/10"
+                                        >
+                                            詳細を見る
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     );
