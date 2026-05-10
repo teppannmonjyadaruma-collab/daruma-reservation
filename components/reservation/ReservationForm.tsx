@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import liff from "@line/liff";
 import { fetchCalendarStatus, type CalendarStatusMap } from "@/lib/calendar-cache";
 import { fetchDayAvailabilityDetail } from "@/lib/day-availability";
+import { fetchCourseAvailabilityDetail } from "@/lib/course-availability";
 
 type Course = "" | "席のみ" | "だるま満喫" | "鉄板満喫" | "特選だるま";
 type Drink = "" | "なし" | "90" | "120";
@@ -55,13 +56,6 @@ const initialFormData: ReservationFormData = {
 };
 
 const weekLabels = ["日", "月", "火", "水", "木", "金", "土"];
-
-const mockLunchTimes = ["11:00", "11:15", "11:30", "12:00", "12:30", "13:00"];
-const mockDinnerTimes = ["17:00", "17:15", "18:00", "18:30", "19:00", "19:30"];
-
-function isLunchTime(startTime: string) {
-    return !!startTime && startTime < "17:00";
-}
 
 function getDrinkOptions(course: Course): Drink[] {
     switch (course) {
@@ -427,7 +421,7 @@ function Step1DateGuestsTime({
                             onChange={(e) => onGuestChange("child", Number(e.target.value))}
                             className="w-full rounded-xl border border-yellow-600 bg-white px-4 py-3 text-black"
                         >
-                            {Array.from({ length: 11 }, (_, i) => i).map((n) => (
+                            {Array.from({ length: 25 }, (_, i) => i).map((n) => (
                                 <option key={n} value={n}>
                                     {n}名
                                 </option>
@@ -540,15 +534,26 @@ function Step1DateGuestsTime({
 function Step2Course({
     formData,
     setFormData,
+    courseAvailability,
+    courseAvailabilityLoading,
+    courseAvailabilityError,
 }: {
     formData: ReservationFormData;
     setFormData: React.Dispatch<React.SetStateAction<ReservationFormData>>;
+    courseAvailability: {
+        seatOnlyAvailable: boolean;
+        course120Available: boolean;
+        course150Available: boolean;
+    } | null;
+    courseAvailabilityLoading: boolean;
+    courseAvailabilityError: string;
 }) {
     const isLunch = formData.visitType === "lunch";
+
     const courseState = getCourseState({
         isLunch,
-        available120: true,
-        available150: false,
+        available120: courseAvailability?.course120Available ?? false,
+        available150: courseAvailability?.course150Available ?? false,
     });
 
     const cards: Exclude<Course, "">[] = ["席のみ", "だるま満喫", "鉄板満喫", "特選だるま"];
@@ -556,29 +561,72 @@ function Step2Course({
     return (
         <div>
             <h2 className="mb-3 text-lg font-black text-yellow-300 md:text-xl">STEP4 コースを選ぶ</h2>
+
+            {courseAvailabilityLoading && (
+                <p className="mb-4 text-sm font-bold text-white/70">
+                    コース選択可否を確認中です...
+                </p>
+            )}
+
+            {courseAvailabilityError && (
+                <p className="mb-4 text-sm font-bold text-red-300">
+                    {courseAvailabilityError}
+                </p>
+            )}
+
             <div className="grid gap-4 md:grid-cols-2">
                 {cards.map((course) => {
                     const state = courseState[course];
+
                     return (
                         <div
                             key={course}
-                            className={`rounded-2xl border p-4 ${state.disabled ? "border-white/10 bg-white/5 opacity-60" : "border-yellow-500 bg-black/25"}`}
+                            className={`rounded-2xl border p-4 ${
+                                state.disabled
+                                    ? "border-white/10 bg-white/5 opacity-60"
+                                    : "border-yellow-500 bg-black/25"
+                            }`}
                         >
                             <div className="mb-3 text-lg font-black text-white">{course}</div>
-                            <div className="mb-4 text-sm text-white/75">{course === "席のみ" ? "お席のみのご予約です。" : "コース詳細ページへ遷移する導線を後で追加予定。"}</div>
-                            {state.reason && <p className="mb-3 text-xs text-yellow-200">{state.reason}</p>}
+
+                            <div className="mb-4 text-sm text-white/75">
+                                {course === "席のみ"
+                                    ? "お席のみのご予約です。"
+                                    : "コース詳細ページへ遷移する導線を後で追加予定。"}
+                            </div>
+
+                            {state.reason && (
+                                <p className="mb-3 text-xs text-yellow-200">{state.reason}</p>
+                            )}
+
                             <div className="flex gap-2">
                                 <button
                                     type="button"
                                     disabled={state.disabled}
-                                    onClick={() => setFormData((prev) => ({ ...prev, course, drink: "", teppanPref: "" }))}
-                                    className={`rounded-xl px-4 py-2 text-sm font-bold ${state.disabled ? "bg-white/10 text-white/60" : formData.course === course ? "bg-yellow-400 text-black" : "bg-white text-black"
-                                        }`}
+                                    onClick={() =>
+                                        setFormData((prev) => ({
+                                            ...prev,
+                                            course,
+                                            drink: "",
+                                            teppanPref: "",
+                                        }))
+                                    }
+                                    className={`rounded-xl px-4 py-2 text-sm font-bold ${
+                                        state.disabled
+                                            ? "bg-white/10 text-white/60"
+                                            : formData.course === course
+                                              ? "bg-yellow-400 text-black"
+                                              : "bg-white text-black"
+                                    }`}
                                 >
                                     このコースを選ぶ
                                 </button>
+
                                 {course !== "席のみ" && (
-                                    <button type="button" className="rounded-xl border border-white/20 px-4 py-2 text-sm font-bold text-white">
+                                    <button
+                                        type="button"
+                                        className="rounded-xl border border-white/20 px-4 py-2 text-sm font-bold text-white"
+                                    >
                                         詳細を見る
                                     </button>
                                 )}
@@ -731,6 +779,14 @@ export default function ReservationForm() {
     const [lunchAvailableTimes, setLunchAvailableTimes] = useState<string[]>([]);
     const [dinnerAvailableTimes, setDinnerAvailableTimes] = useState<string[]>([]);
 
+    const [courseAvailabilityLoading, setCourseAvailabilityLoading] = useState(false);
+    const [courseAvailabilityError, setCourseAvailabilityError] = useState("");
+    const [courseAvailability, setCourseAvailability] = useState<{
+        seatOnlyAvailable: boolean;
+        course120Available: boolean;
+        course150Available: boolean;
+    } | null>(null);
+
     useEffect(() => {
         const initLiff = async () => {
             try {
@@ -876,6 +932,9 @@ export default function ReservationForm() {
         setDinnerAvailableTimes([]);
         setDayAvailabilityError("");
         setDayAvailabilityLoading(false);
+        setCourseAvailability(null);
+        setCourseAvailabilityError("");
+        setCourseAvailabilityLoading(false);
 
         setFormData((prev) => ({
             ...prev,
@@ -888,6 +947,50 @@ export default function ReservationForm() {
         }));
     };
 
+    const loadCourseAvailability = async () => {
+        if (!formData.visitDate) {
+            setCourseAvailabilityError("来店日が未選択です。");
+            return false;
+        }
+
+        if (!formData.startTime) {
+            setCourseAvailabilityError("開始時間が未選択です。");
+            return false;
+        }
+
+        if (formData.adult + formData.child <= 0) {
+            setCourseAvailabilityError("人数が未選択です。");
+            return false;
+        }
+
+        setCourseAvailabilityLoading(true);
+        setCourseAvailabilityError("");
+
+        try {
+            const result = await fetchCourseAvailabilityDetail(
+                formData.visitDate,
+                formData.adult,
+                formData.child,
+                formData.startTime
+            );
+
+            setCourseAvailability({
+                seatOnlyAvailable: result.seatOnlyAvailable,
+                course120Available: result.course120Available,
+                course150Available: result.course150Available,
+            });
+
+            return true;
+        } catch (error) {
+            console.error("loadCourseAvailability error:", error);
+            setCourseAvailabilityError("コースの選択可否取得に失敗しました。");
+            setCourseAvailability(null);
+            return false;
+        } finally {
+            setCourseAvailabilityLoading(false);
+        }
+    };
+
     const handleNext = () => {
         setError("");
 
@@ -896,7 +999,14 @@ export default function ReservationForm() {
             if (totalGuests <= 0) return setError("人数を選択してください。");
             if (!formData.visitType) return setError("ランチかディナーを選択してください。");
             if (!formData.startTime) return setError("時間帯を選択してください。");
-            setCurrentStep(2);
+
+            loadCourseAvailability().then((ok) => {
+                if (ok) {
+                    setCurrentStep(2);
+                } else {
+                    setError("コースの選択可否取得に失敗しました。");
+                }
+            });
             return;
         }
 
@@ -987,7 +1097,15 @@ export default function ReservationForm() {
                         dinnerAvailableTimes={dinnerAvailableTimes}
                     />
                 )}
-                {currentStep === 2 && <Step2Course formData={formData} setFormData={setFormData} />}
+                {currentStep === 2 && (
+                    <Step2Course
+                        formData={formData}
+                        setFormData={setFormData}
+                        courseAvailability={courseAvailability}
+                        courseAvailabilityLoading={courseAvailabilityLoading}
+                        courseAvailabilityError={courseAvailabilityError}
+                    />
+                )}
                 {currentStep === 3 && <Step3Options formData={formData} setFormData={setFormData} />}
                 {currentStep === 4 && <Step4CustomerInfo formData={formData} setFormData={setFormData} />}
                 {currentStep === 5 && <Step5Confirm formData={formData} />}
