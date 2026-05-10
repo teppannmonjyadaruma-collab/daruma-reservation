@@ -981,7 +981,7 @@ function Step2Course({
                                     <div className="border-b border-white/10 px-5 py-4 md:px-7">
                                         <div className="flex items-start justify-between gap-4">
                                             <div>
-                                                <div className="mb-2 flex items-center gap-2">
+                                                <div>
                                                     <h3
                                                         className="text-2xl font-bold tracking-[0.06em] text-transparent bg-clip-text"
                                                         style={{
@@ -995,17 +995,19 @@ function Step2Course({
                                                     </h3>
 
                                                     {detailCourse.badge && (
-                                                        <span
-                                                            className="inline-flex whitespace-nowrap rounded-full px-4 py-1 text-[11px] font-black tracking-[0.12em] text-white"
-                                                            style={{
-                                                                background:
-                                                                    "linear-gradient(135deg, #7f1d1d 0%, #dc2626 45%, #f59e0b 100%)",
-                                                                boxShadow: "0 6px 18px rgba(239,68,68,0.35)",
-                                                                border: "1px solid rgba(255,220,120,0.45)",
-                                                            }}
-                                                        >
-                                                            {detailCourse.badge}
-                                                        </span>
+                                                        <div className="mt-3">
+                                                            <span
+                                                                className="inline-flex whitespace-nowrap rounded-full px-4 py-1 text-[11px] font-black tracking-[0.12em] text-white"
+                                                                style={{
+                                                                    background:
+                                                                        "linear-gradient(135deg, #7f1d1d 0%, #dc2626 45%, #f59e0b 100%)",
+                                                                    boxShadow: "0 6px 18px rgba(239,68,68,0.35)",
+                                                                    border: "1px solid rgba(255,220,120,0.45)",
+                                                                }}
+                                                            >
+                                                                {detailCourse.badge}
+                                                            </span>
+                                                        </div>
                                                     )}
                                                 </div>
 
@@ -1045,8 +1047,8 @@ function Step2Course({
                                                         type="button"
                                                         onClick={() => setDetailImageIndex(index)}
                                                         className={`shrink-0 overflow-hidden rounded-2xl border transition ${detailImageIndex === index
-                                                                ? "border-yellow-300"
-                                                                : "border-white/10"
+                                                            ? "border-yellow-300"
+                                                            : "border-white/10"
                                                             }`}
                                                     >
                                                         <img
@@ -1080,8 +1082,8 @@ function Step2Course({
                                                     </div>
                                                     <div
                                                         className={`whitespace-pre-line px-4 py-3 text-sm leading-7 ${row.label === "飲み放題"
-                                                                ? "font-black text-red-400"
-                                                                : "text-white"
+                                                            ? "font-black text-red-400"
+                                                            : "text-white"
                                                             }`}
                                                     >
                                                         {row.value}
@@ -1149,8 +1151,8 @@ function Step2Course({
                                                     setDetailCourseKey(null);
                                                 }}
                                                 className={`rounded-2xl px-5 py-3 text-sm font-black transition ${detailState?.disabled
-                                                        ? "cursor-not-allowed bg-white/10 text-white/50"
-                                                        : "bg-gradient-to-r from-yellow-300 via-yellow-400 to-yellow-500 text-black shadow-[0_8px_18px_rgba(234,179,8,0.22)] hover:brightness-105"
+                                                    ? "cursor-not-allowed bg-white/10 text-white/50"
+                                                    : "bg-gradient-to-r from-yellow-300 via-yellow-400 to-yellow-500 text-black shadow-[0_8px_18px_rgba(234,179,8,0.22)] hover:brightness-105"
                                                     }`}
                                             >
                                                 このコースを選ぶ
