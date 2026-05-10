@@ -571,6 +571,9 @@ function Step2Course({
     courseAvailabilityLoading: boolean;
     courseAvailabilityError: string;
 }) {
+    const [detailCourseKey, setDetailCourseKey] = useState<Exclude<Course, ""> | null>(null);
+    const [detailImageIndex, setDetailImageIndex] = useState(0);
+
     const courseState = getCourseState({
         formData,
         courseAvailability,
@@ -582,31 +585,53 @@ function Step2Course({
         badge?: string;
         price?: string;
         imageSrc: string;
+        imageGallery: string[];
         seatTime: string;
         deadline: string;
         items: string;
         guests: string;
         description: string;
         highlightNote?: string;
+        detailRows: { label: string; value: string }[];
+        courseContent?: string;
     }[] = [
             {
                 key: "席のみ",
                 title: "お席のみのご予約",
                 imageSrc: "/temp-photo.jpg",
+                imageGallery: ["/temp-photo.jpg"],
                 price: "",
                 seatTime: "120分",
                 deadline: "ご利用当日20:00",
                 items: "-",
                 guests: "1名様〜",
                 description: "コースを指定せずにお席のみのご予約になります。",
+                detailRows: [
+                    { label: "ご利用人数", value: "1名様〜" },
+                    { label: "席時間", value: "ランチ帯90分 / ディナー帯120分" },
+                    { label: "ランチ帯ご予約可能時間", value: "11:00〜13:00スタート" },
+                    {
+                        label: "ディナー帯ご予約可能時間",
+                        value: "17:00〜20:00スタート (日〜火・木) / 17:00〜21:00スタート (金・土・祝)",
+                    },
+                    { label: "ご予約可能日", value: "日〜火・木〜土・祝日・祝前日" },
+                    { label: "ご予約締切", value: "ご利用当日20:00" },
+                ],
             },
             {
                 key: "だるま満喫",
                 title: "だるま満喫コース",
                 badge: "おすすめ",
                 imageSrc: "/temp-photo.jpg",
+                imageGallery: [
+                    "/temp-photo.jpg",
+                    "/temp-photo.jpg",
+                    "/temp-photo.jpg",
+                    "/temp-photo.jpg",
+                    "/temp-photo.jpg",
+                ],
                 price: "2,980円（税込）／1名様",
-                seatTime: "150分",
+                seatTime: "120分",
                 deadline: "ご利用前日22:00",
                 items: "9品",
                 guests: "2名様〜",
@@ -614,11 +639,50 @@ function Step2Course({
                     "後ほど差し替えます。サンプルテキスト。サンプルテキスト。サンプルテキスト。サンプルテキスト。サンプルテキスト。サンプルテキスト。",
                 highlightNote:
                     "お一人様＋1,500円（税込）で90分飲み放題がお選びいただけます！",
+                detailRows: [
+                    { label: "コース品数", value: "9品" },
+                    { label: "ご利用人数", value: "2名様〜" },
+                    { label: "席時間", value: "120分" },
+                    {
+                        label: "ご予約可能時間",
+                        value: "17:00〜20:00スタート (日〜火・木) / 17:00〜21:00スタート (金・土・祝)",
+                    },
+                    { label: "ご予約可能日", value: "日〜火・木〜土・祝日・祝前日" },
+                    { label: "ご予約締切", value: "ご利用前日22:00" },
+                    { label: "飲み放題", value: "お一人様＋1,500円（税込）で90分飲み放題！" },
+                ],
+                courseContent: `■前菜3種（人数分）
+・枝豆
+・白菜キムチ
+・ポテトサラダ（小鉢）
+
+■鉄板焼き2品
+・ズーチーモ
+・とんぺい焼
+
+■焼きそば
+・豚焼きそば
+
+■お好み焼き
+・だるま焼
+
+■もんじゃ
+・明太もちチーズもんじゃ
+
+■甘味
+・アイス（バニラor抹茶）`,
             },
             {
                 key: "鉄板満喫",
                 title: "鉄板満喫コース",
                 imageSrc: "/temp-photo.jpg",
+                imageGallery: [
+                    "/temp-photo.jpg",
+                    "/temp-photo.jpg",
+                    "/temp-photo.jpg",
+                    "/temp-photo.jpg",
+                    "/temp-photo.jpg",
+                ],
                 price: "3,980円（税込）／1名様",
                 seatTime: "150分",
                 deadline: "ご利用前日22:00",
@@ -628,11 +692,51 @@ function Step2Course({
                     "後ほど差し替えます。サンプルテキスト。サンプルテキスト。サンプルテキスト。サンプルテキスト。サンプルテキスト。サンプルテキスト。",
                 highlightNote:
                     "お一人様＋2,000円（税込）で120分飲み放題がお選びいただけます！",
+                detailRows: [
+                    { label: "コース品数", value: "10品" },
+                    { label: "ご利用人数", value: "2名様〜" },
+                    { label: "席時間", value: "150分" },
+                    {
+                        label: "ご予約可能時間",
+                        value: "17:00〜19:30スタート (日〜火・木) / 17:00〜20:30スタート (金・土・祝)",
+                    },
+                    { label: "ご予約可能日", value: "日〜火・木〜土・祝日・祝前日" },
+                    { label: "ご予約締切", value: "ご利用前日22:00" },
+                    { label: "飲み放題", value: "お一人様＋2,000円（税込）で120分飲み放題！" },
+                ],
+                courseContent: `■前菜3種
+・枝豆
+・白菜キムチ
+・ポテトサラダ（小鉢）
+
+■鉄板焼き3品
+・ズーチーモ
+・ガーリックシュリンプ（変更可）
+・ホタテバター
+
+■焼きそば
+・ミックス焼きそば
+
+■お好み焼き
+・特だるま焼
+
+■もんじゃ
+・明太もちチーズもんじゃ
+
+■甘味
+・アイス（バニラor抹茶）`,
             },
             {
                 key: "特選だるま",
                 title: "特選だるまコース",
                 imageSrc: "/temp-photo.jpg",
+                imageGallery: [
+                    "/temp-photo.jpg",
+                    "/temp-photo.jpg",
+                    "/temp-photo.jpg",
+                    "/temp-photo.jpg",
+                    "/temp-photo.jpg",
+                ],
                 price: "5,980円（税込）／1名様",
                 seatTime: "150分",
                 deadline: "ご利用前日22:00",
@@ -642,8 +746,54 @@ function Step2Course({
                     "後ほど差し替えます。サンプルテキスト。サンプルテキスト。サンプルテキスト。サンプルテキスト。サンプルテキスト。サンプルテキスト。",
                 highlightNote:
                     "お一人様＋2,000円（税込）で120分飲み放題がお選びいただけます！",
+                detailRows: [
+                    { label: "コース品数", value: "12品" },
+                    { label: "ご利用人数", value: "2名様〜" },
+                    { label: "席時間", value: "150分" },
+                    {
+                        label: "ご予約可能時間",
+                        value: "17:00〜19:30スタート (日〜火・木) / 17:00〜20:30スタート (金・土・祝)",
+                    },
+                    { label: "ご予約可能日", value: "日〜火・木〜土・祝日・祝前日" },
+                    { label: "ご予約締切", value: "ご利用前日22:00" },
+                    { label: "飲み放題", value: "お一人様＋2,000円（税込）で120分飲み放題！" },
+                ],
+                courseContent: `■前菜3種
+・枝豆
+・チャンジャ
+・ポテトサラダ（小鉢）
+
+■鉄板焼き4品
+・ズーチーモ
+・牡蠣バター（変更可）
+・ホタテバター
+・ガーリックシュリンプ（変更可）
+
+■肉料理
+・サーロインステーキ
+
+■焼きそば
+・牡蠣焼きそば（変更可）
+
+■お好み焼き
+・特だるま焼
+
+■もんじゃ
+・明太もちチーズもんじゃ
+
+■甘味（人数分）
+・アイス（バニラor抹茶）`,
             },
         ];
+
+    const detailCourse =
+        detailCourseKey ? courseCards.find((course) => course.key === detailCourseKey) ?? null : null;
+
+    const detailState = detailCourse ? courseState[detailCourse.key] : null;
+    const detailMainImage =
+        detailCourse && detailCourse.imageGallery[detailImageIndex]
+            ? detailCourse.imageGallery[detailImageIndex]
+            : detailCourse?.imageSrc;
 
     return (
         <div>
@@ -670,10 +820,10 @@ function Step2Course({
                         <div
                             key={course.key}
                             className={`overflow-hidden rounded-[28px] border p-4 transition md:p-5 ${state.disabled
-                                ? "border-white/10 bg-white/5 opacity-60"
-                                : isSelected
-                                    ? "border-yellow-300 bg-[rgba(255,220,90,0.08)] shadow-[0_0_0_1px_rgba(253,224,71,0.25)]"
-                                    : "border-yellow-500/60 bg-black/25"
+                                    ? "border-white/10 bg-white/5 opacity-60"
+                                    : isSelected
+                                        ? "border-yellow-300 bg-[rgba(255,220,90,0.08)] shadow-[0_0_0_1px_rgba(253,224,71,0.25)]"
+                                        : "border-yellow-500/60 bg-black/25"
                                 }`}
                         >
                             <div className="grid gap-4 md:grid-cols-[220px_1fr]">
@@ -682,14 +832,17 @@ function Step2Course({
                                         <h3
                                             className="text-[22px] font-bold tracking-[0.06em] text-transparent bg-clip-text"
                                             style={{
-                                                fontFamily: '"Times New Roman", "Hiragino Mincho ProN", "Yu Mincho", serif',
+                                                fontFamily:
+                                                    '"Times New Roman", "Hiragino Mincho ProN", "Yu Mincho", serif',
                                                 backgroundImage:
                                                     "linear-gradient(180deg, #fff7cc 0%, #f7d96b 22%, #d9a93a 52%, #fff1a8 78%, #b67a18 100%)",
-                                                textShadow: "0 1px 0 rgba(255,255,255,0.12), 0 2px 10px rgba(250,204,21,0.10)",
+                                                textShadow:
+                                                    "0 1px 0 rgba(255,255,255,0.12), 0 2px 10px rgba(250,204,21,0.10)",
                                             }}
                                         >
                                             {course.title}
                                         </h3>
+
                                         {course.badge && (
                                             <span
                                                 className="rounded-full px-3 py-1 text-[11px] font-black tracking-[0.12em] text-white"
@@ -772,10 +925,10 @@ function Step2Course({
                                                 }))
                                             }
                                             className={`rounded-2xl px-5 py-3 text-sm font-black transition ${state.disabled
-                                                ? "cursor-not-allowed bg-white/10 text-white/50"
-                                                : isSelected
-                                                    ? "bg-yellow-400 text-black shadow-[0_8px_20px_rgba(250,204,21,0.25)]"
-                                                    : "bg-gradient-to-r from-yellow-300 via-yellow-400 to-yellow-500 text-black shadow-[0_8px_18px_rgba(234,179,8,0.22)] hover:brightness-105"
+                                                    ? "cursor-not-allowed bg-white/10 text-white/50"
+                                                    : isSelected
+                                                        ? "bg-yellow-400 text-black shadow-[0_8px_20px_rgba(250,204,21,0.25)]"
+                                                        : "bg-gradient-to-r from-yellow-300 via-yellow-400 to-yellow-500 text-black shadow-[0_8px_18px_rgba(234,179,8,0.22)] hover:brightness-105"
                                                 }`}
                                         >
                                             このコースを選ぶ
@@ -783,6 +936,10 @@ function Step2Course({
 
                                         <button
                                             type="button"
+                                            onClick={() => {
+                                                setDetailCourseKey(course.key);
+                                                setDetailImageIndex(0);
+                                            }}
                                             className="rounded-2xl border border-white/20 bg-white/5 px-5 py-3 text-sm font-black text-white transition hover:bg-white/10"
                                         >
                                             詳細を見る
@@ -794,6 +951,161 @@ function Step2Course({
                     );
                 })}
             </div>
+
+            {detailCourse && (
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 px-4 py-6 backdrop-blur-sm">
+                    <div className="flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-[28px] border border-yellow-400/20 bg-[rgba(18,12,6,0.98)] shadow-2xl">
+                        <div className="border-b border-white/10 px-5 py-4 md:px-7">
+                            <div className="flex items-start justify-between gap-4">
+                                <div>
+                                    <div className="mb-2 flex items-center gap-2">
+                                        <h3
+                                            className="text-2xl font-bold tracking-[0.06em] text-transparent bg-clip-text"
+                                            style={{
+                                                fontFamily:
+                                                    '"Times New Roman", "Hiragino Mincho ProN", "Yu Mincho", serif',
+                                                backgroundImage:
+                                                    "linear-gradient(180deg, #fff7cc 0%, #f7d96b 22%, #d9a93a 52%, #fff1a8 78%, #b67a18 100%)",
+                                            }}
+                                        >
+                                            {detailCourse.title}
+                                        </h3>
+
+                                        {detailCourse.badge && (
+                                            <span
+                                                className="rounded-full px-3 py-1 text-[11px] font-black tracking-[0.12em] text-white"
+                                                style={{
+                                                    background:
+                                                        "linear-gradient(135deg, #7f1d1d 0%, #dc2626 45%, #f59e0b 100%)",
+                                                    boxShadow: "0 6px 18px rgba(239,68,68,0.35)",
+                                                    border: "1px solid rgba(255,220,120,0.45)",
+                                                }}
+                                            >
+                                                {detailCourse.badge}
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    {detailState?.reason && (
+                                        <p className="rounded-2xl border border-yellow-500/20 bg-yellow-500/10 px-4 py-3 text-center text-sm font-bold text-yellow-200">
+                                            {detailState.reason}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <button
+                                    type="button"
+                                    onClick={() => setDetailCourseKey(null)}
+                                    className="rounded-full border border-white/15 px-3 py-2 text-sm font-bold text-white/80 transition hover:bg-white/10"
+                                >
+                                    ✕
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="overflow-y-auto px-5 py-5 md:px-7">
+                            <div className="mb-5 overflow-hidden rounded-[24px] border border-white/10 bg-black/20">
+                                <div className="aspect-[4/3] w-full overflow-hidden bg-black">
+                                    <img
+                                        src={detailMainImage}
+                                        alt={detailCourse.title}
+                                        className="h-full w-full object-cover"
+                                    />
+                                </div>
+                            </div>
+
+                            {detailCourse.imageGallery.length > 1 && (
+                                <div className="mb-6 flex gap-2 overflow-x-auto pb-1">
+                                    {detailCourse.imageGallery.map((src, index) => (
+                                        <button
+                                            key={`${detailCourse.key}-${index}`}
+                                            type="button"
+                                            onClick={() => setDetailImageIndex(index)}
+                                            className={`shrink-0 overflow-hidden rounded-2xl border transition ${detailImageIndex === index
+                                                    ? "border-yellow-300"
+                                                    : "border-white/10"
+                                                }`}
+                                        >
+                                            <img
+                                                src={src}
+                                                alt={`${detailCourse.title} ${index + 1}`}
+                                                className="h-20 w-20 object-cover"
+                                            />
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+
+                            <p className="mb-5 text-sm leading-8 text-white/85">
+                                {detailCourse.description}
+                            </p>
+
+                            {detailCourse.price && (
+                                <p className="mb-5 text-xl font-black text-yellow-200">
+                                    {detailCourse.price}
+                                </p>
+                            )}
+
+                            <div className="mb-6 overflow-hidden rounded-[24px] border border-white/10 bg-black/20">
+                                {detailCourse.detailRows.map((row, index) => (
+                                    <div
+                                        key={`${detailCourse.key}-row-${index}`}
+                                        className="grid grid-cols-[130px_1fr] border-b border-white/10 last:border-b-0"
+                                    >
+                                        <div className="bg-white/5 px-4 py-3 text-sm font-black text-yellow-200">
+                                            {row.label}
+                                        </div>
+                                        <div className="px-4 py-3 text-sm leading-7 text-white">
+                                            {row.value}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {detailCourse.courseContent && (
+                                <div className="mb-6 rounded-[24px] border border-white/10 bg-black/20 px-5 py-5">
+                                    <h4 className="mb-3 text-base font-black text-yellow-200">コース内容</h4>
+                                    <div className="whitespace-pre-line text-sm leading-8 text-white/90">
+                                        {detailCourse.courseContent}
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="flex flex-col gap-3 sm:flex-row">
+                                <button
+                                    type="button"
+                                    disabled={detailState?.disabled}
+                                    onClick={() => {
+                                        if (detailState?.disabled) return;
+
+                                        setFormData((prev) => ({
+                                            ...prev,
+                                            course: detailCourse.key,
+                                            drink: "",
+                                            teppanPref: "",
+                                        }));
+                                        setDetailCourseKey(null);
+                                    }}
+                                    className={`rounded-2xl px-5 py-3 text-sm font-black transition ${detailState?.disabled
+                                            ? "cursor-not-allowed bg-white/10 text-white/50"
+                                            : "bg-gradient-to-r from-yellow-300 via-yellow-400 to-yellow-500 text-black shadow-[0_8px_18px_rgba(234,179,8,0.22)] hover:brightness-105"
+                                        }`}
+                                >
+                                    このコースを選ぶ
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={() => setDetailCourseKey(null)}
+                                    className="rounded-2xl border border-white/20 bg-white/5 px-5 py-3 text-sm font-black text-white transition hover:bg-white/10"
+                                >
+                                    閉じる
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
