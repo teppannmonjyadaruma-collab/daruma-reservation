@@ -310,8 +310,8 @@ function FloatingReservationSummary({
     }
 
     return createPortal(
-       <div className="fixed left-1/2 top-[44px] z-[9000] w-[calc(100%-24px)] max-w-3xl -translate-x-1/2 pointer-events-none">
-            <div className="rounded-[22px] border border-yellow-400/20 bg-[rgba(20,14,8,0.72)] px-4 py-3 text-white shadow-[0_10px_30px_rgba(0,0,0,0.28)] backdrop-blur-xl md:px-5">
+        <div className="fixed left-1/2 top-[44px] z-[9000] w-[calc(100%-24px)] max-w-3xl -translate-x-1/2 pointer-events-none">
+            <div className="rounded-[22px] border border-yellow-400/20 bg-[rgba(20,14,8,0.50)] px-4 py-3 text-center text-white shadow-[0_10px_30px_rgba(0,0,0,0.28)] backdrop-blur-xl md:px-5">
                 {currentStep === 2 && (
                     <p className="mb-1 text-xs font-black tracking-[0.08em] text-yellow-200">
                         ご予約内容
@@ -1831,6 +1831,8 @@ export default function ReservationForm() {
         }
     };
 
+    const needsStepOffset = currentStep === 2 || currentStep === 3 || currentStep === 4;
+
     return (
         <div
             className="mx-auto w-full rounded-[28px] p-[1.5px] shadow-[0_12px_30px_rgba(0,0,0,0.35)]"
@@ -1861,7 +1863,7 @@ export default function ReservationForm() {
                     currentStep={currentStep}
                 />
 
-                <div>
+                <div className={needsStepOffset ? "pt-20 md:pt-24" : ""}>
                     {currentStep === 1 && (
                         <Step1DateGuestsTime
                             formData={formData}
