@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import liff from "@line/liff";
 import { fetchCalendarStatus, type CalendarStatusMap } from "@/lib/calendar-cache";
 import { fetchDayAvailabilityDetail } from "@/lib/day-availability";
@@ -789,6 +790,12 @@ function Step2Course({
     const detailCourse =
         detailCourseKey ? courseCards.find((course) => course.key === detailCourseKey) ?? null : null;
 
+    const [isMounted, setIsMounted] = useState(false);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
     useEffect(() => {
         if (detailCourse) {
             const originalOverflow = document.body.style.overflow;
@@ -965,190 +972,205 @@ function Step2Course({
                 })}
             </div>
 
-            {detailCourse && (
-                <div className="fixed inset-0 z-[9999] bg-black/25 backdrop-blur-xl">
-                    <div className="absolute inset-0 overflow-y-auto">
-                        <div className="flex min-h-full items-center justify-center p-4 md:p-6">
-                            <div className="w-full max-w-4xl overflow-hidden rounded-[28px] border border-yellow-400/20 bg-[rgba(18,12,6,0.88)] shadow-2xl">
-                                <div className="border-b border-white/10 px-5 py-4 md:px-7">
-                                    <div className="flex items-start justify-between gap-4">
-                                        <div>
-                                            <div className="mb-2 flex items-center gap-2">
-                                                <h3
-                                                    className="text-2xl font-bold tracking-[0.06em] text-transparent bg-clip-text"
-                                                    style={{
-                                                        fontFamily:
-                                                            '"Times New Roman", "Hiragino Mincho ProN", "Yu Mincho", serif',
-                                                        backgroundImage:
-                                                            "linear-gradient(180deg, #fff7cc 0%, #f7d96b 22%, #d9a93a 52%, #fff1a8 78%, #b67a18 100%)",
-                                                    }}
-                                                >
-                                                    {detailCourse.title}
-                                                </h3>
-
-                                                {detailCourse.badge && (
-                                                    <span
-                                                        className="rounded-full px-3 py-1 text-[11px] font-black tracking-[0.12em] text-white"
+            {isMounted && detailCourse &&
+                createPortal(
+                    <div className="fixed inset-0 z-[9999] bg-black/30 backdrop-blur-2xl">
+                        <div className="absolute inset-0 overflow-y-auto">
+                            <div className="flex min-h-full items-center justify-center p-4 md:p-6">
+                                <div className="w-full max-w-4xl overflow-hidden rounded-[28px] border border-yellow-400/20 bg-[rgba(18,12,6,0.86)] shadow-2xl">
+                                    <div className="border-b border-white/10 px-5 py-4 md:px-7">
+                                        <div className="flex items-start justify-between gap-4">
+                                            <div>
+                                                <div className="mb-2 flex items-center gap-2">
+                                                    <h3
+                                                        className="text-2xl font-bold tracking-[0.06em] text-transparent bg-clip-text"
                                                         style={{
-                                                            background:
-                                                                "linear-gradient(135deg, #7f1d1d 0%, #dc2626 45%, #f59e0b 100%)",
-                                                            boxShadow: "0 6px 18px rgba(239,68,68,0.35)",
-                                                            border: "1px solid rgba(255,220,120,0.45)",
+                                                            fontFamily:
+                                                                '"Times New Roman", "Hiragino Mincho ProN", "Yu Mincho", serif',
+                                                            backgroundImage:
+                                                                "linear-gradient(180deg, #fff7cc 0%, #f7d96b 22%, #d9a93a 52%, #fff1a8 78%, #b67a18 100%)",
                                                         }}
                                                     >
-                                                        {detailCourse.badge}
-                                                    </span>
+                                                        {detailCourse.title}
+                                                    </h3>
+
+                                                    {detailCourse.badge && (
+                                                        <span
+                                                            className="inline-flex whitespace-nowrap rounded-full px-4 py-1 text-[11px] font-black tracking-[0.12em] text-white"
+                                                            style={{
+                                                                background:
+                                                                    "linear-gradient(135deg, #7f1d1d 0%, #dc2626 45%, #f59e0b 100%)",
+                                                                boxShadow: "0 6px 18px rgba(239,68,68,0.35)",
+                                                                border: "1px solid rgba(255,220,120,0.45)",
+                                                            }}
+                                                        >
+                                                            {detailCourse.badge}
+                                                        </span>
+                                                    )}
+                                                </div>
+
+                                                {detailState?.reason && (
+                                                    <p className="rounded-2xl border border-yellow-500/20 bg-yellow-500/10 px-4 py-3 text-center text-sm font-bold text-yellow-200">
+                                                        {detailState.reason}
+                                                    </p>
                                                 )}
                                             </div>
 
-                                            {detailState?.reason && (
-                                                <p className="rounded-2xl border border-yellow-500/20 bg-yellow-500/10 px-4 py-3 text-center text-sm font-bold text-yellow-200">
-                                                    {detailState.reason}
-                                                </p>
-                                            )}
-                                        </div>
-
-                                        <button
-                                            type="button"
-                                            onClick={() => setDetailCourseKey(null)}
-                                            className="rounded-full border border-white/15 px-3 py-2 text-sm font-bold text-white/80 transition hover:bg-white/10"
-                                        >
-                                            ✕
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <div className="max-h-[calc(92vh-88px)] overflow-y-auto px-5 py-5 md:px-7">
-                                    <div className="mb-5 overflow-hidden rounded-[24px] border border-white/10 bg-black/5">
-                                        <div className="aspect-[4/3] w-full overflow-hidden">
-                                            <img
-                                                src={detailMainImage}
-                                                alt={detailCourse.title}
-                                                className="h-full w-full object-cover"
-                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setDetailCourseKey(null)}
+                                                className="rounded-full border border-white/15 px-3 py-2 text-sm font-bold text-white/80 transition hover:bg-white/10"
+                                            >
+                                                ✕
+                                            </button>
                                         </div>
                                     </div>
 
-                                    {detailCourse.imageGallery.length > 1 && (
-                                        <div className="mb-6 flex gap-2 overflow-x-auto pb-1">
-                                            {detailCourse.imageGallery.map((src, index) => (
-                                                <button
-                                                    key={`${detailCourse.key}-${index}`}
-                                                    type="button"
-                                                    onClick={() => setDetailImageIndex(index)}
-                                                    className={`shrink-0 overflow-hidden rounded-2xl border transition ${detailImageIndex === index
-                                                            ? "border-yellow-300"
-                                                            : "border-white/10"
-                                                        }`}
+                                    <div className="max-h-[calc(92vh-88px)] overflow-y-auto px-5 py-5 md:px-7">
+                                        <div className="mb-5 overflow-hidden rounded-[24px] border border-white/10 bg-black/5">
+                                            <div className="aspect-[4/3] w-full overflow-hidden">
+                                                <img
+                                                    src={detailMainImage}
+                                                    alt={detailCourse.title}
+                                                    className="h-full w-full object-cover"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        {detailCourse.imageGallery.length > 1 && (
+                                            <div className="mb-6 flex gap-2 overflow-x-auto pb-1">
+                                                {detailCourse.imageGallery.map((src, index) => (
+                                                    <button
+                                                        key={`${detailCourse.key}-${index}`}
+                                                        type="button"
+                                                        onClick={() => setDetailImageIndex(index)}
+                                                        className={`shrink-0 overflow-hidden rounded-2xl border transition ${detailImageIndex === index
+                                                                ? "border-yellow-300"
+                                                                : "border-white/10"
+                                                            }`}
+                                                    >
+                                                        <img
+                                                            src={src}
+                                                            alt={`${detailCourse.title} ${index + 1}`}
+                                                            className="h-20 w-20 object-cover"
+                                                        />
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
+
+                                        <p className="mb-5 text-sm leading-8 text-white/85">
+                                            {detailCourse.description}
+                                        </p>
+
+                                        {detailCourse.price && (
+                                            <p className="mb-5 text-xl font-black text-yellow-200">
+                                                {detailCourse.price}
+                                            </p>
+                                        )}
+
+                                        <div className="mb-6 overflow-hidden rounded-[24px] border border-white/10 bg-black/5">
+                                            {detailCourse.detailRows.map((row, index) => (
+                                                <div
+                                                    key={`${detailCourse.key}-row-${index}`}
+                                                    className="grid grid-cols-[130px_1fr] border-b border-white/10 last:border-b-0"
                                                 >
-                                                    <img
-                                                        src={src}
-                                                        alt={`${detailCourse.title} ${index + 1}`}
-                                                        className="h-20 w-20 object-cover"
-                                                    />
-                                                </button>
+                                                    <div className="bg-white/5 px-4 py-3 text-sm font-black text-yellow-200">
+                                                        {row.label}
+                                                    </div>
+                                                    <div
+                                                        className={`whitespace-pre-line px-4 py-3 text-sm leading-7 ${row.label === "飲み放題"
+                                                                ? "font-black text-red-400"
+                                                                : "text-white"
+                                                            }`}
+                                                    >
+                                                        {row.value}
+                                                    </div>
+                                                </div>
                                             ))}
                                         </div>
-                                    )}
 
-                                    <p className="mb-5 text-sm leading-8 text-white/85">
-                                        {detailCourse.description}
-                                    </p>
+                                        {detailCourse.courseContent && (
+                                            <div className="mb-6 rounded-[24px] border border-white/10 bg-black/5 px-5 py-5 text-center">
+                                                <h4 className="mb-5 text-xl font-black tracking-[0.08em] text-yellow-100">
+                                                    コース内容
+                                                </h4>
 
-                                    {detailCourse.price && (
-                                        <p className="mb-5 text-xl font-black text-yellow-200">
-                                            {detailCourse.price}
-                                        </p>
-                                    )}
+                                                <div className="space-y-2 text-sm leading-8 text-white/90">
+                                                    {detailCourse.courseContent.split("\n").map((line, index) => {
+                                                        const trimmed = line.trim();
+                                                        const isHeading =
+                                                            trimmed.startsWith("〜") && trimmed.endsWith("〜");
 
-                                    <div className="mb-6 overflow-hidden rounded-[24px] border border-white/10 bg-black/5">
-                                        {detailCourse.detailRows.map((row, index) => (
-                                            <div
-                                                key={`${detailCourse.key}-row-${index}`}
-                                                className="grid grid-cols-[130px_1fr] border-b border-white/10 last:border-b-0"
+                                                        if (!trimmed) {
+                                                            return <div key={index} className="h-2" />;
+                                                        }
+
+                                                        return (
+                                                            <p
+                                                                key={index}
+                                                                className={
+                                                                    isHeading
+                                                                        ? "pt-4 text-lg font-bold tracking-[0.04em] text-transparent bg-clip-text"
+                                                                        : ""
+                                                                }
+                                                                style={
+                                                                    isHeading
+                                                                        ? {
+                                                                            fontFamily:
+                                                                                '"Times New Roman", "Hiragino Mincho ProN", "Yu Mincho", serif',
+                                                                            backgroundImage:
+                                                                                "linear-gradient(180deg, #fff7cc 0%, #f7d96b 22%, #d9a93a 52%, #fff1a8 78%, #b67a18 100%)",
+                                                                        }
+                                                                        : undefined
+                                                                }
+                                                            >
+                                                                {trimmed}
+                                                            </p>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        <div className="flex flex-col gap-3 sm:flex-row">
+                                            <button
+                                                type="button"
+                                                disabled={detailState?.disabled}
+                                                onClick={() => {
+                                                    if (detailState?.disabled) return;
+
+                                                    setFormData((prev) => ({
+                                                        ...prev,
+                                                        course: detailCourse.key,
+                                                        drink: "",
+                                                        teppanPref: "",
+                                                    }));
+                                                    setDetailCourseKey(null);
+                                                }}
+                                                className={`rounded-2xl px-5 py-3 text-sm font-black transition ${detailState?.disabled
+                                                        ? "cursor-not-allowed bg-white/10 text-white/50"
+                                                        : "bg-gradient-to-r from-yellow-300 via-yellow-400 to-yellow-500 text-black shadow-[0_8px_18px_rgba(234,179,8,0.22)] hover:brightness-105"
+                                                    }`}
                                             >
-                                                <div className="bg-white/5 px-4 py-3 text-sm font-black text-yellow-200">
-                                                    {row.label}
-                                                </div>
-                                                <div
-                                                    className={`whitespace-pre-line px-4 py-3 text-sm leading-7 ${row.label === "飲み放題"
-                                                            ? "font-black text-red-400"
-                                                            : "text-white"
-                                                        }`}
-                                                >
-                                                    {row.value}
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
+                                                このコースを選ぶ
+                                            </button>
 
-                                    {detailCourse.courseContent && (
-                                        <div className="mb-6 rounded-[24px] border border-white/10 bg-black/5 px-5 py-5 text-center">
-                                            <h4 className="mb-4 text-base font-black text-yellow-200">コース内容</h4>
-                                            <div className="space-y-2 text-sm leading-8 text-white/90">
-                                                {detailCourse.courseContent.split("\n").map((line, index) => {
-                                                    const trimmed = line.trim();
-                                                    const isHeading =
-                                                        trimmed.startsWith("〜") && trimmed.endsWith("〜");
-
-                                                    if (!trimmed) {
-                                                        return <div key={index} className="h-2" />;
-                                                    }
-
-                                                    return (
-                                                        <p
-                                                            key={index}
-                                                            className={
-                                                                isHeading
-                                                                    ? "pt-2 text-base font-black text-yellow-200"
-                                                                    : ""
-                                                            }
-                                                        >
-                                                            {trimmed}
-                                                        </p>
-                                                    );
-                                                })}
-                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => setDetailCourseKey(null)}
+                                                className="rounded-2xl border border-white/20 bg-white/5 px-5 py-3 text-sm font-black text-white transition hover:bg-white/10"
+                                            >
+                                                閉じる
+                                            </button>
                                         </div>
-                                    )}
-
-                                    <div className="flex flex-col gap-3 sm:flex-row">
-                                        <button
-                                            type="button"
-                                            disabled={detailState?.disabled}
-                                            onClick={() => {
-                                                if (detailState?.disabled) return;
-
-                                                setFormData((prev) => ({
-                                                    ...prev,
-                                                    course: detailCourse.key,
-                                                    drink: "",
-                                                    teppanPref: "",
-                                                }));
-                                                setDetailCourseKey(null);
-                                            }}
-                                            className={`rounded-2xl px-5 py-3 text-sm font-black transition ${detailState?.disabled
-                                                    ? "cursor-not-allowed bg-white/10 text-white/50"
-                                                    : "bg-gradient-to-r from-yellow-300 via-yellow-400 to-yellow-500 text-black shadow-[0_8px_18px_rgba(234,179,8,0.22)] hover:brightness-105"
-                                                }`}
-                                        >
-                                            このコースを選ぶ
-                                        </button>
-
-                                        <button
-                                            type="button"
-                                            onClick={() => setDetailCourseKey(null)}
-                                            className="rounded-2xl border border-white/20 bg-white/5 px-5 py-3 text-sm font-black text-white transition hover:bg-white/10"
-                                        >
-                                            閉じる
-                                        </button>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-            )}
+                    </div>,
+                    document.body
+                )}
         </div>
     );
 }
