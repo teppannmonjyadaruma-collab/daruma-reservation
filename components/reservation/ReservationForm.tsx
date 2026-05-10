@@ -310,8 +310,8 @@ function FloatingReservationSummary({
     }
 
     return createPortal(
-       <div className="fixed left-1/2 top-[20px] z-[9000] w-[calc(100%-24px)] max-w-3xl -translate-x-1/2 pointer-events-none">
-            <div className="rounded-[22px] border border-yellow-400/20 bg-[rgba(20,14,8,0.50)] px-4 py-3 text-center text-white shadow-[0_10px_30px_rgba(0,0,0,0.28)] backdrop-blur-xl md:px-5">
+       <div className="fixed left-1/2 top-[10px] z-[9000] w-[calc(100%-24px)] max-w-3xl -translate-x-1/2 pointer-events-none">
+            <div className="rounded-[22px] border border-yellow-400/20 bg-[rgba(20,14,8,0.35)] px-4 py-3 text-center text-white shadow-[0_10px_30px_rgba(0,0,0,0.28)] backdrop-blur-xl md:px-5">
                 {currentStep === 2 && (
                     <p className="mb-1 text-xs font-black tracking-[0.08em] text-yellow-200">
                         ご予約内容
