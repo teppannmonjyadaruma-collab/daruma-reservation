@@ -1390,13 +1390,20 @@ function Step3Options({
     );
 }
 
-function FormSectionTitle({ children }: { children: React.ReactNode }) {
+function FormSectionTitle({
+    children,
+    required = false,
+}: {
+    children: React.ReactNode;
+    required?: boolean;
+}) {
     return (
-        <div className="mb-4">
+        <div className="mb-3">
             <p className="text-lg font-black tracking-[0.04em] text-yellow-100 md:text-xl">
                 {children}
+                {required && <span className="ml-1 text-red-400">*</span>}
             </p>
-            <div className="mt-0.8 h-[3px] w-24 rounded-full bg-gradient-to-r from-yellow-200 via-yellow-400 to-yellow-700 shadow-[0_0_10px_rgba(250,204,21,0.25)]" />
+            <div className="mt-1 h-[3px] w-24 rounded-full bg-gradient-to-r from-yellow-200 via-yellow-400 to-yellow-700 shadow-[0_0_10px_rgba(250,204,21,0.25)]" />
         </div>
     );
 }
@@ -1420,7 +1427,7 @@ function Step4CustomerInfo({
 
             <div className="rounded-[28px] border border-yellow-500/30 bg-black/25 p-4 md:p-6">
                 <div className="mb-6">
-                    <FormSectionTitle>代表者氏名</FormSectionTitle>
+                    <FormSectionTitle required={true}>代表者氏名</FormSectionTitle>
 
                     <div className="grid grid-cols-2 gap-3">
                         <div>
@@ -1476,7 +1483,7 @@ function Step4CustomerInfo({
                 </div>
 
                 <div className="mb-6">
-                    <FormSectionTitle>電話番号</FormSectionTitle>
+                    <FormSectionTitle required={true}>電話番号</FormSectionTitle>
                     <input
                         value={formData.phone}
                         onChange={(e) => update("phone", e.target.value)}
@@ -1500,6 +1507,11 @@ function Step4CustomerInfo({
                     </p>
                 </div>
             </div>
+
+            <p className="text-sm font-black text-red-400">
+                *のついている項目は必須項目です。
+            </p>
+
         </div>
     );
 }
