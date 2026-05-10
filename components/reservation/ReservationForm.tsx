@@ -225,6 +225,8 @@ function Step1DateGuestsTime({
     calendarStatusLoading,
     calendarStatusError,
     onGuestChange,
+    onDateChange,
+    onStartTimeChange,
     onSelectVisitType,
     dayAvailabilityLoading,
     dayAvailabilityError,
@@ -244,6 +246,8 @@ function Step1DateGuestsTime({
     calendarStatusLoading: boolean;
     calendarStatusError: string;
     onGuestChange: (type: "adult" | "child", value: number) => void;
+    onDateChange: (date: string) => void;
+    onStartTimeChange: (time: string) => void;
     onSelectVisitType: (visitType: VisitType) => void;
     dayAvailabilityLoading: boolean;
     dayAvailabilityError: string;
@@ -361,17 +365,7 @@ function Step1DateGuestsTime({
                                     key={day.date}
                                     type="button"
                                     disabled={day.disabled}
-                                    onClick={() =>
-                                        setFormData((prev) => ({
-                                            ...prev,
-                                            visitDate: day.date,
-                                            visitType: "",
-                                            startTime: "",
-                                            course: "",
-                                            drink: "",
-                                            teppanPref: "",
-                                        }))
-                                    }
+                                    onClick={() => onDateChange(day.date)}
                                     className={`aspect-square rounded-xl border p-1 text-center transition ${isSelected
                                         ? "border-yellow-300 bg-yellow-400 text-black"
                                         : "border-white/20 bg-white/5 text-white"
@@ -494,15 +488,7 @@ function Step1DateGuestsTime({
                                     <button
                                         key={time}
                                         type="button"
-                                        onClick={() =>
-                                            setFormData((prev) => ({
-                                                ...prev,
-                                                startTime: time,
-                                                course: "",
-                                                drink: "",
-                                                teppanPref: "",
-                                            }))
-                                        }
+                                        onClick={() => onStartTimeChange(time)}
                                         className={`shrink-0 rounded-full border px-5 py-3 text-sm font-bold transition ${formData.startTime === time
                                             ? "border-yellow-300 bg-yellow-400 text-black"
                                             : "border-white/20 bg-white/5 text-white hover:bg-white/10"
@@ -581,11 +567,10 @@ function Step2Course({
                     return (
                         <div
                             key={course}
-                            className={`rounded-2xl border p-4 ${
-                                state.disabled
-                                    ? "border-white/10 bg-white/5 opacity-60"
-                                    : "border-yellow-500 bg-black/25"
-                            }`}
+                            className={`rounded-2xl border p-4 ${state.disabled
+                                ? "border-white/10 bg-white/5 opacity-60"
+                                : "border-yellow-500 bg-black/25"
+                                }`}
                         >
                             <div className="mb-3 text-lg font-black text-white">{course}</div>
 
@@ -611,13 +596,12 @@ function Step2Course({
                                             teppanPref: "",
                                         }))
                                     }
-                                    className={`rounded-xl px-4 py-2 text-sm font-bold ${
-                                        state.disabled
-                                            ? "bg-white/10 text-white/60"
-                                            : formData.course === course
-                                              ? "bg-yellow-400 text-black"
-                                              : "bg-white text-black"
-                                    }`}
+                                    className={`rounded-xl px-4 py-2 text-sm font-bold ${state.disabled
+                                        ? "bg-white/10 text-white/60"
+                                        : formData.course === course
+                                            ? "bg-yellow-400 text-black"
+                                            : "bg-white text-black"
+                                        }`}
                                 >
                                     このコースを選ぶ
                                 </button>
@@ -787,6 +771,8 @@ export default function ReservationForm() {
         course150Available: boolean;
     } | null>(null);
 
+    const [isPageTransitionLoading, setIsPageTransitionLoading] = useState(false);
+
     useEffect(() => {
         const initLiff = async () => {
             try {
@@ -831,6 +817,10 @@ export default function ReservationForm() {
 
         loadCalendarStatus();
     }, []);
+
+    useEffect(() => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    }, [currentStep]);
 
     const totalGuests = formData.adult + formData.child;
     const skipOptionStep = useMemo(() => shouldSkipOptionStep(formData), [formData]);
@@ -932,15 +922,54 @@ export default function ReservationForm() {
         setDinnerAvailableTimes([]);
         setDayAvailabilityError("");
         setDayAvailabilityLoading(false);
+
         setCourseAvailability(null);
         setCourseAvailabilityError("");
         setCourseAvailabilityLoading(false);
+        setError("");
 
         setFormData((prev) => ({
             ...prev,
             [type]: value,
             visitType: "",
             startTime: "",
+            course: "",
+            drink: "",
+            teppanPref: "",
+        }));
+    };
+
+    const handleDateChange = (date: string) => {
+        setLunchAvailableTimes([]);
+        setDinnerAvailableTimes([]);
+        setDayAvailabilityError("");
+        setDayAvailabilityLoading(false);
+
+        setCourseAvailability(null);
+        setCourseAvailabilityError("");
+        setCourseAvailabilityLoading(false);
+        setError("");
+
+        setFormData((prev) => ({
+            ...prev,
+            visitDate: date,
+            visitType: "",
+            startTime: "",
+            course: "",
+            drink: "",
+            teppanPref: "",
+        }));
+    };
+
+    const handleStartTimeChange = (time: string) => {
+        setCourseAvailability(null);
+        setCourseAvailabilityError("");
+        setCourseAvailabilityLoading(false);
+        setError("");
+
+        setFormData((prev) => ({
+            ...prev,
+            startTime: time,
             course: "",
             drink: "",
             teppanPref: "",
@@ -1000,13 +1029,19 @@ export default function ReservationForm() {
             if (!formData.visitType) return setError("ランチかディナーを選択してください。");
             if (!formData.startTime) return setError("時間帯を選択してください。");
 
+            setIsPageTransitionLoading(true);
+
             loadCourseAvailability().then((ok) => {
                 if (ok) {
                     setCurrentStep(2);
+                    window.scrollTo({ top: 0, behavior: "smooth" });
                 } else {
                     setError("コースの選択可否取得に失敗しました。");
                 }
+
+                setIsPageTransitionLoading(false);
             });
+
             return;
         }
 
@@ -1065,6 +1100,20 @@ export default function ReservationForm() {
                     "linear-gradient(180deg, rgba(255,235,170,0.95) 0%, rgba(247,211,106,0.9) 40%, rgba(176,122,24,0.95) 100%)",
             }}
         >
+            {isPageTransitionLoading && (
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/55 backdrop-blur-sm">
+                    <div className="mx-6 w-full max-w-sm rounded-3xl border border-yellow-400/40 bg-[rgba(25,18,8,0.95)] px-6 py-7 text-center shadow-2xl">
+                        <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-yellow-300/30 border-t-yellow-300" />
+                        <p className="text-base font-black text-yellow-300">
+                            選択可能なコースを確認しています
+                        </p>
+                        <p className="mt-2 text-sm text-white/70">
+                            少々お待ちください...
+                        </p>
+                    </div>
+                </div>
+            )}
+
             <div className="rounded-[27px] bg-[rgba(0,0,0,0.58)] p-4 text-white backdrop-blur-[2px] md:p-8">
                 <StepIndicator currentStep={currentStep} />
 
@@ -1083,6 +1132,8 @@ export default function ReservationForm() {
                         calendarStatusLoading={calendarStatusLoading}
                         calendarStatusError={calendarStatusError}
                         onGuestChange={handleGuestChange}
+                        onDateChange={handleDateChange}
+                        onStartTimeChange={handleStartTimeChange}
                         onSelectVisitType={(visitType) =>
                             loadDayAvailability(
                                 visitType,
