@@ -1406,7 +1406,7 @@ function Step3Options({
                     {!teppanGuidance.selectable
                         ? teppanGuidance.message
                         : !teppanAvailableForSelectedCourse
-                            ? "この条件では専用鉄板席をご案内できないため、「鉄板あり」は選択できません。"
+                            ? "現在、専用鉄板席の空きがないため「鉄板あり」は選択できません。"
                             : "ご希望がある場合はお選びください。"}
                 </p>
 
