@@ -1578,33 +1578,199 @@ function Step4CustomerInfo({
     );
 }
 
-function Step5Confirm({ formData }: { formData: ReservationFormData }) {
+function formatVisitDateJapanese(dateString: string) {
+    if (!dateString) return "";
+
+    const date = new Date(dateString);
+    if (Number.isNaN(date.getTime())) return dateString;
+
+    return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
+}
+
+function getCourseLabel(course: Course) {
+    switch (course) {
+        case "席のみ":
+            return "お席のみのご予約";
+        case "だるま満喫":
+            return "だるま満喫コース";
+        case "鉄板満喫":
+            return "鉄板満喫コース";
+        case "特選だるま":
+            return "特選だるまコース";
+        default:
+            return "";
+    }
+}
+
+function getVisitTypeLabel(visitType: VisitType) {
+    switch (visitType) {
+        case "lunch":
+            return "ランチ";
+        case "dinner":
+            return "ディナー";
+        default:
+            return "";
+    }
+}
+
+function getDrinkLabel(drink: Drink) {
+    switch (drink) {
+        case "90":
+            return "90分";
+        case "120":
+            return "120分";
+        case "なし":
+            return "なし";
+        default:
+            return "";
+    }
+}
+
+function getTeppanPrefLabel(teppanPref: TeppanPref) {
+    switch (teppanPref) {
+        case "鉄板あり":
+            return "あり";
+        case "希望なし":
+            return "なし";
+        default:
+            return "";
+    }
+}
+
+function ConfirmSectionTitle({ children }: { children: React.ReactNode }) {
     return (
-        <div className="space-y-4">
-            <h2 className="mb-3 text-lg font-black text-yellow-300 md:text-xl">STEP7 内容確認</h2>
-            <div className="rounded-2xl border border-yellow-500 bg-black/25 p-4 text-white">
-                <dl className="grid gap-2 md:grid-cols-2">
-                    <div><dt className="text-sm text-white/65">来店日</dt><dd>{formData.visitDate}</dd></div>
-                    <div><dt className="text-sm text-white/65">来店区分</dt><dd>{formData.visitType === "lunch" ? "ランチ" : formData.visitType === "dinner" ? "ディナー" : ""}</dd></div>
-                    <div><dt className="text-sm text-white/65">開始時間</dt><dd>{formData.startTime}</dd></div>
-                    <div><dt className="text-sm text-white/65">人数</dt><dd>大人 {formData.adult} / 子供 {formData.child}</dd></div>
-                    <div><dt className="text-sm text-white/65">コース</dt><dd>{formData.course}</dd></div>
-                    <div><dt className="text-sm text-white/65">飲み放題</dt><dd>{formData.drink}</dd></div>
-                    <div><dt className="text-sm text-white/65">鉄板希望</dt><dd>{formData.teppanPref}</dd></div>
-                    <div>
-                        <dt className="text-sm text-white/65">氏名</dt>
-                        <dd>{formData.lastName} {formData.firstName}</dd>
-                    </div>
-                    <div>
-                        <dt className="text-sm text-white/65">フリガナ</dt>
-                        <dd>{formData.lastNameKana} {formData.firstNameKana}</dd>
-                    </div>
-                    <div><dt className="text-sm text-white/65">電話番号</dt><dd>{formData.phone}</dd></div>
-                    <div className="md:col-span-2"><dt className="text-sm text-white/65">備考</dt><dd>{formData.note || "なし"}</dd></div>
-                </dl>
+        <div className="mb-4">
+            <p className="text-lg font-black tracking-[0.04em] text-yellow-100 md:text-xl">
+                {children}
+            </p>
+            <div className="mt-1 h-[3px] w-28 rounded-full bg-gradient-to-r from-yellow-200 via-yellow-400 to-yellow-700 shadow-[0_0_10px_rgba(250,204,21,0.25)]" />
+        </div>
+    );
+}
+
+function ConfirmRow({
+    label,
+    value,
+    multiline = false,
+}: {
+    label: string;
+    value: React.ReactNode;
+    multiline?: boolean;
+}) {
+    return (
+        <div className="grid grid-cols-[110px_1fr] gap-3 border-b border-white/10 py-3 last:border-b-0">
+            <div className="text-sm font-bold text-white/60">{label}</div>
+            <div
+                className={`text-sm font-black text-white ${multiline ? "whitespace-pre-line leading-7" : ""}`}
+            >
+                {value}
             </div>
-            <button type="button" className="w-full rounded-2xl bg-yellow-400 px-6 py-4 text-lg font-black text-black">
-                送信する
+        </div>
+    );
+}
+
+function Step5Confirm({ formData }: { formData: ReservationFormData }) {
+    const courseLabel = getCourseLabel(formData.course);
+    const visitTypeLabel = getVisitTypeLabel(formData.visitType);
+    const drinkLabel = getDrinkLabel(formData.drink);
+    const teppanPrefLabel = getTeppanPrefLabel(formData.teppanPref);
+
+    const showTeppanPref =
+        formData.teppanPref === "鉄板あり" || formData.teppanPref === "希望なし";
+
+    return (
+        <div className="space-y-6">
+            <h2 className="mb-3 text-lg font-black text-yellow-300 md:text-xl">
+                STEP7 内容確認
+            </h2>
+
+            <div className="rounded-[28px] border border-yellow-500/30 bg-black/25 p-4 md:p-6">
+                <div className="mb-7">
+                    <ConfirmSectionTitle>ご予約内容</ConfirmSectionTitle>
+                    <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-2">
+                        <ConfirmRow
+                            label="ご来店日"
+                            value={formatVisitDateJapanese(formData.visitDate)}
+                        />
+                        <ConfirmRow
+                            label="ご来店人数"
+                            value={`大人${formData.adult}名 / 子供${formData.child}名`}
+                        />
+                        <ConfirmRow
+                            label="ご来店区分"
+                            value={visitTypeLabel}
+                        />
+                        <ConfirmRow
+                            label="ご来店時間"
+                            value={formData.startTime}
+                        />
+                    </div>
+                </div>
+
+                <div className="mb-7">
+                    <ConfirmSectionTitle>ご来店者情報</ConfirmSectionTitle>
+                    <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-2">
+                        <ConfirmRow
+                            label="代表者名"
+                            value={`${formData.lastName} ${formData.firstName}`}
+                        />
+                        <ConfirmRow
+                            label="代表者名(カタカナ)"
+                            value={`${formData.lastNameKana} ${formData.firstNameKana}`}
+                        />
+                        <ConfirmRow
+                            label="電話番号"
+                            value={formData.phone}
+                        />
+                    </div>
+                </div>
+
+                <div className="mb-7">
+                    <ConfirmSectionTitle>コース・ご要望事項</ConfirmSectionTitle>
+                    <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-2">
+                        <ConfirmRow
+                            label="コース"
+                            value={courseLabel}
+                        />
+
+                        {drinkLabel && (
+                            <ConfirmRow
+                                label="飲み放題"
+                                value={drinkLabel}
+                            />
+                        )}
+
+                        {showTeppanPref && (
+                            <ConfirmRow
+                                label="専用鉄板希望"
+                                value={teppanPrefLabel}
+                            />
+                        )}
+
+                        <ConfirmRow
+                            label="ご要望"
+                            value={formData.note.trim() ? formData.note : "なし"}
+                            multiline={true}
+                        />
+                    </div>
+                </div>
+
+                <div className="rounded-[24px] border border-red-400/20 bg-red-950/20 px-4 py-4">
+                    <p className="mb-2 text-sm font-black text-red-300">
+                        ■キャンセルについて
+                    </p>
+                    <ul className="space-y-2 pl-5 text-sm font-bold leading-7 text-white/85 list-disc">
+                        <li>ご予約のキャンセルはお電話にてご連絡ください。</li>
+                        <li>当日のご予約キャンセルは料金の100%をいただきます。</li>
+                    </ul>
+                </div>
+            </div>
+
+            <button
+                type="button"
+                className="w-full rounded-2xl bg-gradient-to-r from-red-700 via-red-600 to-red-700 px-6 py-4 text-lg font-black text-white shadow-[0_12px_24px_rgba(127,29,29,0.35)] transition hover:brightness-110"
+            >
+                ご予約を確定する
             </button>
         </div>
     );
