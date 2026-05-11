@@ -1653,15 +1653,19 @@ function ConfirmRow({
     value,
     multiline = false,
 }: {
-    label: string;
+    label: React.ReactNode;
     value: React.ReactNode;
     multiline?: boolean;
 }) {
     return (
-        <div className="grid grid-cols-[110px_1fr] gap-3 border-b border-white/10 py-3 last:border-b-0">
-            <div className="text-sm font-bold text-white/60">{label}</div>
+        <div className="grid grid-cols-[120px_1fr] overflow-hidden border-b border-white/10 last:border-b-0">
+            <div className="flex items-center border-r border-white/10 bg-black/18 px-4 py-4 text-sm font-bold leading-6 text-white/65">
+                {label}
+            </div>
+
             <div
-                className={`text-sm font-black text-white ${multiline ? "whitespace-pre-line leading-7" : ""}`}
+                className={`flex items-center px-4 py-4 text-sm font-black text-white ${multiline ? "whitespace-pre-line leading-7" : ""
+                    }`}
             >
                 {value}
             </div>
@@ -1715,7 +1719,13 @@ function Step5Confirm({ formData }: { formData: ReservationFormData }) {
                             value={`${formData.lastName} ${formData.firstName}`}
                         />
                         <ConfirmRow
-                            label="代表者名(カタカナ)"
+                            label={
+                                <>
+                                    <span>代表者名</span>
+                                    <br />
+                                    <span className="text-xs font-bold text-white/45">(カタカナ)</span>
+                                </>
+                            }
                             value={`${formData.lastNameKana} ${formData.firstNameKana}`}
                         />
                         <ConfirmRow
