@@ -639,7 +639,7 @@ function Step1DateGuestsTime({
                     <div className="rounded-2xl border border-white/10 bg-black/25 px-4 py-5 text-sm text-white/75">
                         先にランチかディナーを選択してください。
                     </div>
-                ) : (
+                ) : dayAvailabilityLoading ? null : (
                     <div className="relative">
                         <div className="overflow-x-auto">
                             <div className="flex min-w-max gap-2 rounded-2xl bg-black/25 p-3">
@@ -649,8 +649,8 @@ function Step1DateGuestsTime({
                                         type="button"
                                         onClick={() => onStartTimeChange(time)}
                                         className={`shrink-0 rounded-full border px-5 py-3 text-sm font-bold transition ${formData.startTime === time
-                                            ? "border-yellow-300 bg-yellow-400 text-black"
-                                            : "border-white/20 bg-white/5 text-white hover:bg-white/10"
+                                                ? "border-yellow-300 bg-yellow-400 text-black"
+                                                : "border-white/20 bg-white/5 text-white hover:bg-white/10"
                                             }`}
                                     >
                                         {time}
