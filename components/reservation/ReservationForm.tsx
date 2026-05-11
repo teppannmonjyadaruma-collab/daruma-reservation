@@ -2387,7 +2387,7 @@ export default function ReservationForm() {
                         <p className="mb-3 text-2xl font-black text-red-300">
                             送信に失敗しました
                         </p>
-                        <p className="text-sm font-bold leading-7 text-white/85">
+                        <p className="whitespace-pre-line text-sm font-bold leading-7 text-white/85">
                             {submitErrorMessage || "お手数ですが店舗へお電話でお問い合わせください。"}
                         </p>
 
