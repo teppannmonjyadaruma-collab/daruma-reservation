@@ -1691,7 +1691,7 @@ function Step5Confirm({ formData }: { formData: ReservationFormData }) {
             <div className="rounded-[28px] border border-yellow-500/30 bg-black/25 p-4 md:p-6">
                 <div className="mb-7">
                     <ConfirmSectionTitle>ご予約内容</ConfirmSectionTitle>
-                    <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-2">
+                    <div className="overflow-hidden rounded-[24px] border border-white/10 bg-black/10">
                         <ConfirmRow
                             label="ご来店日"
                             value={formatVisitDateJapanese(formData.visitDate)}
@@ -1713,18 +1713,17 @@ function Step5Confirm({ formData }: { formData: ReservationFormData }) {
 
                 <div className="mb-7">
                     <ConfirmSectionTitle>ご来店者情報</ConfirmSectionTitle>
-                    <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-2">
+                    <div className="overflow-hidden rounded-[24px] border border-white/10 bg-black/10">
                         <ConfirmRow
                             label="代表者名"
                             value={`${formData.lastName} ${formData.firstName}`}
                         />
                         <ConfirmRow
                             label={
-                                <>
-                                    <span>代表者名</span>
-                                    <br />
-                                    <span className="text-xs font-bold text-white/45">(カタカナ)</span>
-                                </>
+                                <div className="leading-5">
+                                    <div>代表者名</div>
+                                    <div className="text-xs font-bold text-white/45">(カタカナ)</div>
+                                </div>
                             }
                             value={`${formData.lastNameKana} ${formData.firstNameKana}`}
                         />
@@ -1737,7 +1736,7 @@ function Step5Confirm({ formData }: { formData: ReservationFormData }) {
 
                 <div className="mb-7">
                     <ConfirmSectionTitle>コース・ご要望事項</ConfirmSectionTitle>
-                    <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-2">
+                    <div className="overflow-hidden rounded-[24px] border border-white/10 bg-black/10">
                         <ConfirmRow
                             label="コース"
                             value={courseLabel}
