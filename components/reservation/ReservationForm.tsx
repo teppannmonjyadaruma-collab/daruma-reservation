@@ -1399,8 +1399,8 @@ function Step3Options({
 
                 <p
                     className={`mb-4 text-sm leading-7 ${teppanGuidance.selectable && teppanAvailableForSelectedCourse
-                            ? "text-white/70"
-                            : "font-bold text-yellow-200"
+                        ? "text-white/70"
+                        : "font-bold text-yellow-200"
                         }`}
                 >
                     {!teppanGuidance.selectable
@@ -2490,25 +2490,27 @@ export default function ReservationForm() {
 
                 {error && <p className="mt-6 rounded-xl bg-red-950/70 px-4 py-3 text-sm font-bold text-red-200">{error}</p>}
 
-                <div className="mt-8 flex items-center justify-between gap-3">
-                    <button
-                        type="button"
-                        onClick={handleBack}
-                        disabled={currentStep === 1}
-                        className="rounded-2xl border border-white/20 px-5 py-3 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-40"
-                    >
-                        戻る
-                    </button>
-                    {currentStep !== 5 && currentStep !== 2 && (
+                {!(currentStep === 1 && dayAvailabilityLoading) && (
+                    <div className="mt-8 flex items-center justify-between gap-3">
                         <button
                             type="button"
-                            onClick={handleNext}
-                            className="rounded-2xl bg-yellow-400 px-6 py-3 text-sm font-black text-black"
+                            onClick={handleBack}
+                            disabled={currentStep === 1}
+                            className="rounded-2xl border border-white/20 px-5 py-3 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-40"
                         >
-                            次へ
+                            戻る
                         </button>
-                    )}
-                </div>
+                        {currentStep !== 5 && currentStep !== 2 && (
+                            <button
+                                type="button"
+                                onClick={handleNext}
+                                className="rounded-2xl bg-yellow-400 px-6 py-3 text-sm font-black text-black"
+                            >
+                                次へ
+                            </button>
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );
