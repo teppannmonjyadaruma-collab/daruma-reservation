@@ -1311,12 +1311,33 @@ function Step2Course({
 function Step3Options({
     formData,
     setFormData,
+    courseAvailability,
 }: {
     formData: ReservationFormData;
     setFormData: React.Dispatch<React.SetStateAction<ReservationFormData>>;
+    courseAvailability: {
+        seatOnlyAvailable: boolean;
+        course120Available: boolean;
+        course150Available: boolean;
+        seatOnlyTeppanAvailable: boolean;
+        course120TeppanAvailable: boolean;
+        course150TeppanAvailable: boolean;
+    } | null;
 }) {
     const drinkOptions = getDrinkOptions(formData.course);
     const teppanGuidance = getTeppanGuidance(formData.adult, formData.child);
+
+    const teppanAvailableForSelectedCourse =
+        formData.course === "席のみ"
+            ? courseAvailability?.seatOnlyTeppanAvailable ?? false
+            : formData.course === "だるま満喫"
+                ? courseAvailability?.course120TeppanAvailable ?? false
+                : formData.course === "鉄板満喫" || formData.course === "特選だるま"
+                    ? courseAvailability?.course150TeppanAvailable ?? false
+                    : false;
+
+    const canSelectTeppan =
+        teppanGuidance.selectable && teppanAvailableForSelectedCourse;
 
     const isSeatOnly = formData.course === "席のみ";
     const teppanChoices: TeppanPref[] = ["鉄板あり", "希望なし"];
@@ -1377,32 +1398,44 @@ function Step3Options({
                 <h3 className="mb-2 text-lg font-black text-white">専用鉄板希望</h3>
 
                 <p
-                    className={`mb-4 text-sm leading-7 ${teppanGuidance.selectable ? "text-white/70" : "font-bold text-yellow-200"
+                    className={`mb-4 text-sm leading-7 ${teppanGuidance.selectable && teppanAvailableForSelectedCourse
+                            ? "text-white/70"
+                            : "font-bold text-yellow-200"
                         }`}
                 >
-                    {teppanGuidance.message}
+                    {!teppanGuidance.selectable
+                        ? teppanGuidance.message
+                        : !teppanAvailableForSelectedCourse
+                            ? "この条件では専用鉄板席をご案内できないため、「鉄板あり」は選択できません。"
+                            : "ご希望がある場合はお選びください。"}
                 </p>
 
                 <div className="grid grid-cols-2 gap-3">
-                    {teppanChoices.map((option) => (
-                        <button
-                            key={option}
-                            type="button"
-                            disabled={!teppanGuidance.selectable}
-                            onClick={() => {
-                                if (!teppanGuidance.selectable) return;
-                                setFormData((prev) => ({ ...prev, teppanPref: option }));
-                            }}
-                            className={`rounded-2xl border px-4 py-4 text-sm font-black transition ${!teppanGuidance.selectable
-                                ? "cursor-not-allowed border-white/10 bg-white/5 text-white/35"
-                                : formData.teppanPref === option
-                                    ? "border-yellow-300 bg-yellow-400 text-black"
-                                    : "border-white/20 bg-white/5 text-white hover:bg-white/10"
-                                }`}
-                        >
-                            {option}
-                        </button>
-                    ))}
+                    {teppanChoices.map((option) => {
+                        const disabled =
+                            !teppanGuidance.selectable ||
+                            (option === "鉄板あり" && !teppanAvailableForSelectedCourse);
+
+                        return (
+                            <button
+                                key={option}
+                                type="button"
+                                disabled={disabled}
+                                onClick={() => {
+                                    if (disabled) return;
+                                    setFormData((prev) => ({ ...prev, teppanPref: option }));
+                                }}
+                                className={`rounded-2xl border px-4 py-4 text-sm font-black transition ${disabled
+                                    ? "cursor-not-allowed border-white/10 bg-white/5 text-white/35"
+                                    : formData.teppanPref === option
+                                        ? "border-yellow-300 bg-yellow-400 text-black"
+                                        : "border-white/20 bg-white/5 text-white hover:bg-white/10"
+                                    }`}
+                            >
+                                {option}
+                            </button>
+                        );
+                    })}
                 </div>
             </section>
         </div>
@@ -1836,6 +1869,9 @@ export default function ReservationForm() {
         seatOnlyAvailable: boolean;
         course120Available: boolean;
         course150Available: boolean;
+        seatOnlyTeppanAvailable: boolean;
+        course120TeppanAvailable: boolean;
+        course150TeppanAvailable: boolean;
     } | null>(null);
 
     const [lunchDeadlinePassed, setLunchDeadlinePassed] = useState(false);
@@ -2119,6 +2155,9 @@ export default function ReservationForm() {
                 seatOnlyAvailable: result.seatOnlyAvailable,
                 course120Available: result.course120Available,
                 course150Available: result.course150Available,
+                seatOnlyTeppanAvailable: result.seatOnlyTeppanAvailable ?? false,
+                course120TeppanAvailable: result.course120TeppanAvailable ?? false,
+                course150TeppanAvailable: result.course150TeppanAvailable ?? false,
             });
 
             return true;
@@ -2428,6 +2467,7 @@ export default function ReservationForm() {
                         <Step3Options
                             formData={formData}
                             setFormData={setFormData}
+                            courseAvailability={courseAvailability}
                         />
                     )}
 

@@ -6,6 +6,9 @@ export type CourseAvailabilityDetail = {
   seatOnlyAvailable: boolean;
   course120Available: boolean;
   course150Available: boolean;
+  seatOnlyTeppanAvailable: boolean;
+  course120TeppanAvailable: boolean;
+  course150TeppanAvailable: boolean;
   holidayName: string;
   businessType: "22close" | "23close" | "closed";
 };
