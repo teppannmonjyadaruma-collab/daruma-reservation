@@ -725,7 +725,7 @@ function Step2Course({
                 imageSrc: "/temp-photo.jpg",
                 imageGallery: ["/temp-photo.jpg"],
                 price: "",
-                seatTime: "120分",
+                seatTime: "昼：90分\n夜：120分",
                 deadline: "昼：当日13:00\n夜：当日20:00",
                 items: "-",
                 guests: "1名様〜",
