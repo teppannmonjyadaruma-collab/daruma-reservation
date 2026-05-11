@@ -1026,7 +1026,7 @@ function Step2Course({
                                     <div className="mb-4 grid grid-cols-2 gap-2">
                                         <div className="rounded-2xl border border-white/10 bg-black/20 p-3 text-center">
                                             <div className="mb-1 text-[11px] font-bold text-white/60">席時間</div>
-                                            <div className="text-sm font-black text-white">{course.seatTime}</div>
+                                            <div className="whitespace-pre-line text-sm font-black text-white">{course.seatTime}</div>
                                         </div>
 
                                         <div className="rounded-2xl border border-white/10 bg-black/20 p-3 text-center">
