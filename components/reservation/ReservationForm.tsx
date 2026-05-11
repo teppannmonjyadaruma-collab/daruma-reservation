@@ -62,6 +62,9 @@ const initialFormData: ReservationFormData = {
 
 const weekLabels = ["日", "月", "火", "水", "木", "金", "土"];
 
+const STORE_PHONE_NUMBER = "0297340853";
+const STORE_PHONE_LABEL = "0297-34-0853";
+
 function getDrinkOptions(course: Course): Drink[] {
     switch (course) {
         case "席のみ":
@@ -1673,7 +1676,13 @@ function ConfirmRow({
     );
 }
 
-function Step5Confirm({ formData }: { formData: ReservationFormData }) {
+function Step5Confirm({
+    formData,
+    onSubmit,
+}: {
+    formData: ReservationFormData;
+    onSubmit: () => void;
+}) {
     const courseLabel = getCourseLabel(formData.course);
     const visitTypeLabel = getVisitTypeLabel(formData.visitType);
     const drinkLabel = getDrinkLabel(formData.drink);
@@ -1777,6 +1786,7 @@ function Step5Confirm({ formData }: { formData: ReservationFormData }) {
 
             <button
                 type="button"
+                onClick={onSubmit}
                 className="w-full rounded-2xl bg-gradient-to-r from-red-700 via-red-600 to-red-700 px-6 py-4 text-lg font-black text-white shadow-[0_12px_24px_rgba(127,29,29,0.35)] transition hover:brightness-110"
             >
                 ご予約を確定する
@@ -1832,6 +1842,11 @@ export default function ReservationForm() {
     const [dinnerDeadlinePassed, setDinnerDeadlinePassed] = useState(false);
 
     const [isPageTransitionLoading, setIsPageTransitionLoading] = useState(false);
+
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitSuccess, setSubmitSuccess] = useState(false);
+    const [submitErrorOpen, setSubmitErrorOpen] = useState(false);
+    const [submitErrorMessage, setSubmitErrorMessage] = useState("");
 
     const [customerInfoErrors, setCustomerInfoErrors] = useState<{
         lastName: boolean;
@@ -2190,6 +2205,59 @@ export default function ReservationForm() {
         }
     };
 
+    const handleSubmitReservation = async () => {
+        setError("");
+        setSubmitErrorMessage("");
+        setSubmitErrorOpen(false);
+
+        const payload = {
+            visitDate: formData.visitDate,
+            visitType: formData.visitType,
+            startTime: formData.startTime,
+            adult: formData.adult,
+            child: formData.child,
+            course: formData.course,
+            drink: formData.drink,
+            teppanPref: formData.teppanPref,
+            name: `${formData.lastName} ${formData.firstName}`.trim(),
+            kana: `${formData.lastNameKana} ${formData.firstNameKana}`.trim(),
+            phone: formData.phone,
+            note: formData.note,
+            lineUserId,
+            displayName,
+        };
+
+        try {
+            setIsSubmitting(true);
+
+            const response = await fetch("https://script.google.com/macros/s/AKfycbwEL5sSGosFYsP4X4AUatVjIiUb9ONhQNOKAa74rk5WW_hGRyWENwWvsVDy-KIFhkUfDw/exec", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "text/plain;charset=utf-8",
+                },
+                body: JSON.stringify(payload),
+            });
+
+            const result = await response.json();
+
+            if (!response.ok || !result.ok) {
+                throw new Error(result?.error || "予約送信に失敗しました。");
+            }
+
+            setSubmitSuccess(true);
+        } catch (error) {
+            console.error("submit reservation error:", error);
+            setSubmitErrorMessage(
+                error instanceof Error
+                    ? error.message
+                    : "予約送信に失敗しました。お手数ですが店舗へお電話でお問い合わせください。"
+            );
+            setSubmitErrorOpen(true);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     const handleBack = () => {
         setError("");
 
@@ -2228,6 +2296,76 @@ export default function ReservationForm() {
                         <p className="mt-2 text-sm text-white/70">
                             少々お待ちください...
                         </p>
+                    </div>
+                </div>
+            )}
+
+            {isSubmitting && (
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/55 backdrop-blur-sm">
+                    <div className="mx-6 w-full max-w-sm rounded-3xl border border-yellow-400/40 bg-[rgba(25,18,8,0.95)] px-6 py-7 text-center shadow-2xl">
+                        <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-yellow-300/30 border-t-yellow-300" />
+                        <p className="text-base font-black text-yellow-300">
+                            ご予約内容を送信しています
+                        </p>
+                        <p className="mt-2 text-sm text-white/70">
+                            少々お待ちください...
+                        </p>
+                    </div>
+                </div>
+            )}
+
+            {submitSuccess && (
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+                    <div className="mx-6 w-full max-w-md rounded-3xl border border-yellow-400/30 bg-[rgba(25,18,8,0.96)] px-6 py-7 text-center shadow-2xl">
+                        <p className="mb-3 text-2xl font-black text-yellow-300">
+                            ご予約が完了しました
+                        </p>
+                        <p className="text-sm font-bold leading-7 text-white/85">
+                            ご予約ありがとうございました。<br />
+                            LINEトークに予約内容をお送りしました。
+                        </p>
+
+                        <button
+                            type="button"
+                            onClick={() => {
+                                if (liff.isInClient()) {
+                                    liff.closeWindow();
+                                } else {
+                                    setSubmitSuccess(false);
+                                }
+                            }}
+                            className="mt-6 w-full rounded-2xl bg-gradient-to-r from-yellow-300 via-yellow-400 to-yellow-500 px-6 py-4 text-base font-black text-black shadow-[0_8px_18px_rgba(234,179,8,0.22)]"
+                        >
+                            閉じる
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {submitErrorOpen && (
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+                    <div className="mx-6 w-full max-w-md rounded-3xl border border-red-400/30 bg-[rgba(35,12,12,0.96)] px-6 py-7 text-center shadow-2xl">
+                        <p className="mb-3 text-2xl font-black text-red-300">
+                            送信に失敗しました
+                        </p>
+                        <p className="text-sm font-bold leading-7 text-white/85">
+                            {submitErrorMessage || "お手数ですが店舗へお電話でお問い合わせください。"}
+                        </p>
+
+                        <a
+                            href={`tel:${STORE_PHONE_NUMBER}`}
+                            className="mt-6 block w-full rounded-2xl bg-gradient-to-r from-red-700 via-red-600 to-red-700 px-6 py-4 text-base font-black text-white shadow-[0_8px_18px_rgba(127,29,29,0.35)]"
+                        >
+                            {STORE_PHONE_LABEL} に電話する
+                        </a>
+
+                        <button
+                            type="button"
+                            onClick={() => setSubmitErrorOpen(false)}
+                            className="mt-3 w-full rounded-2xl border border-white/20 bg-white/5 px-6 py-4 text-base font-black text-white"
+                        >
+                            閉じる
+                        </button>
                     </div>
                 </div>
             )}
@@ -2302,7 +2440,12 @@ export default function ReservationForm() {
                         />
                     )}
 
-                    {currentStep === 5 && <Step5Confirm formData={formData} />}
+                    {currentStep === 5 && (
+                        <Step5Confirm
+                            formData={formData}
+                            onSubmit={handleSubmitReservation}
+                        />
+                    )}
                 </div>
 
                 {error && <p className="mt-6 rounded-xl bg-red-950/70 px-4 py-3 text-sm font-bold text-red-200">{error}</p>}
