@@ -128,15 +128,15 @@ function getCourseState(params: {
             },
             "だるま満喫": {
                 disabled: true,
-                reason: "ディナーのみ選択可能です",
+                reason: "ディナー時間帯のみ選択可能です",
             },
             "鉄板満喫": {
                 disabled: true,
-                reason: "ディナーのみ選択可能です",
+                reason: "ディナー時間帯のみ選択可能です",
             },
             "特選だるま": {
                 disabled: true,
-                reason: "ディナーのみ選択可能です",
+                reason: "ディナー時間帯のみ選択可能です",
             },
         };
     }
