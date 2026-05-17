@@ -2347,7 +2347,7 @@ export default function ReservationForm() {
                             ご予約内容を送信しています
                         </p>
                         <p className="mt-2 text-sm text-white/70">
-                            少々お待ちください...
+                            画面を閉じずにお待ちください...
                         </p>
                     </div>
                 </div>
