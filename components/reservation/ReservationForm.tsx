@@ -1811,8 +1811,8 @@ function Step5Confirm({
                         ■キャンセルについて
                     </p>
                     <ul className="space-y-2 pl-5 text-sm font-bold leading-7 text-white/85 list-disc">
-                        <li>ご予約のキャンセルはお電話にてご連絡ください。</li>
-                        <li>当日のご予約キャンセルは料金の100%をいただきます。</li>
+                        <li>ご予約のキャンセルはLINEトーク上で行えます。「キャンセル」と一言メッセージをお送りください。</li>
+                        <li>当日のご予約キャンセルは料金の100%をいただきますのでご注意ください。</li>
                     </ul>
                 </div>
             </div>
