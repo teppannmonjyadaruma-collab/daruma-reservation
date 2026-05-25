@@ -212,10 +212,16 @@ function buildCalendarDays(
         const date = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 
         const isPast = dateObj < todayOnly;
-        const rawStatus = calendarStatusMap[date] ?? "";
-        const status = isPast ? "-" : rawStatus;
+        const isBeforeReservationOpen = dateObj < reservationOpenDate;
 
-        const disabled = isPast || status === "×" || status === "休";
+        const rawStatus = calendarStatusMap[date] ?? "";
+        const status = isPast || isBeforeReservationOpen ? "-" : rawStatus;
+
+        const disabled =
+            isPast ||
+            isBeforeReservationOpen ||
+            status === "×" ||
+            status === "休";
 
         days.push({
             date,
@@ -651,8 +657,8 @@ function Step1DateGuestsTime({
                                         type="button"
                                         onClick={() => onStartTimeChange(time)}
                                         className={`shrink-0 rounded-full border px-5 py-3 text-sm font-bold transition ${formData.startTime === time
-                                                ? "border-yellow-300 bg-yellow-400 text-black"
-                                                : "border-white/20 bg-white/5 text-white hover:bg-white/10"
+                                            ? "border-yellow-300 bg-yellow-400 text-black"
+                                            : "border-white/20 bg-white/5 text-white hover:bg-white/10"
                                             }`}
                                     >
                                         {time}
