@@ -191,6 +191,8 @@ function buildCalendarDays(
     const today = new Date();
     const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
+    const reservationOpenDate = new Date(2026, 5, 13); // 2026/06/13
+
     const days: CalendarDay[] = [];
 
     for (let i = 0; i < startWeekday; i++) {
