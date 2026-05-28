@@ -1075,7 +1075,7 @@ function Step2Course({
                                                 setFormData((prev) => ({
                                                     ...prev,
                                                     course: course.key,
-                                                    drink: "",
+                                                    drink: course.key === "席のみ" ? "なし" : "",
                                                     teppanPref: "",
                                                 }));
 
@@ -1282,7 +1282,7 @@ function Step2Course({
                                                     setFormData((prev) => ({
                                                         ...prev,
                                                         course: detailCourse.key,
-                                                        drink: "",
+                                                        drink: detailCourse.key === "席のみ" ? "なし" : "",
                                                         teppanPref: "",
                                                     }));
 
