@@ -1833,11 +1833,13 @@ function Step3Options({
                                 </span>
 
                                 <span
-                                    className={`mt-2 inline-block rounded-full px-2 py-1 text-[10px] font-black ${disabled
+                                    className={`mt-2 inline-block rounded-full px-3 py-1 text-[10px] font-black ${disabled
                                         ? "bg-white/10 text-white/35"
                                         : formData.teppanPref === option.value
-                                            ? "bg-black/15 text-black/75"
-                                            : "bg-white/10 text-white/70"
+                                            ? "bg-black/20 text-black"
+                                            : availableBySeat
+                                                ? "bg-yellow-400 text-black shadow-[0_0_14px_rgba(250,204,21,0.35)]"
+                                                : "bg-white/10 text-white/70"
                                         }`}
                                 >
                                     {statusLabel}
