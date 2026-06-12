@@ -52,6 +52,8 @@ type CourseState = Record<Exclude<Course, "">, { disabled: boolean; reason: stri
 
 const LIFF_ID = "2009798529-5aHrd2K7";
 
+const IS_RESERVATION_MAINTENANCE = true;
+
 const initialFormData: ReservationFormData = {
     visitDate: "",
     visitType: "",
@@ -405,6 +407,51 @@ function StepIndicator({ currentStep }: { currentStep: Step }) {
                     {index !== steps.length - 1 && <div className="h-px w-7 bg-white/25" />}
                 </div>
             ))}
+        </div>
+    );
+}
+
+function ReservationMaintenanceView() {
+    return (
+        <div
+            className="mx-auto w-full rounded-[28px] p-[1.5px] shadow-[0_12px_30px_rgba(0,0,0,0.35)]"
+            style={{
+                background:
+                    "linear-gradient(180deg, rgba(255,235,170,0.95) 0%, rgba(247,211,106,0.9) 40%, rgba(176,122,24,0.95) 100%)",
+            }}
+        >
+            <div className="rounded-[27px] bg-[rgba(0,0,0,0.72)] px-5 py-10 text-center text-white backdrop-blur-[2px] md:px-8 md:py-14">
+                <p className="mb-3 text-sm font-black tracking-[0.18em] text-yellow-300">
+                    RESERVATION MAINTENANCE
+                </p>
+
+                <h2 className="mb-5 text-2xl font-black leading-10 text-yellow-100 md:text-3xl">
+                    ただいま予約機能を
+                    <br />
+                    メンテナンス中です
+                </h2>
+
+                <p className="mx-auto mb-6 max-w-md text-sm font-bold leading-8 text-white/85 md:text-base">
+                    現在、予約機能の調整を行っております。
+                    <br />
+                    恐れ入りますが、ご予約をご希望のお客様は
+                    <br />
+                    お電話にてお問い合わせください。
+                </p>
+
+                <a
+                    href={`tel:${STORE_PHONE_NUMBER}`}
+                    className="mx-auto block w-full max-w-sm rounded-2xl bg-gradient-to-r from-yellow-300 via-yellow-400 to-yellow-500 px-6 py-4 text-base font-black text-black shadow-[0_8px_18px_rgba(234,179,8,0.22)] transition hover:brightness-105"
+                >
+                    {STORE_PHONE_LABEL} に電話する
+                </a>
+
+                <p className="mt-5 text-xs font-bold leading-6 text-white/55">
+                    ご不便をおかけいたしますが、
+                    <br />
+                    ご理解のほどよろしくお願いいたします。
+                </p>
+            </div>
         </div>
     );
 }
@@ -2065,6 +2112,10 @@ function Step5Confirm({
 }
 
 export default function ReservationForm() {
+    if (IS_RESERVATION_MAINTENANCE) {
+        return <ReservationMaintenanceView />;
+    }
+
     const [currentStep, setCurrentStep] = useState<Step>(1);
     const [formData, setFormData] = useState<ReservationFormData>(initialFormData);
     const [error, setError] = useState("");
