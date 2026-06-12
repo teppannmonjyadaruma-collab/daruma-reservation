@@ -79,7 +79,7 @@ type CourseState = Record<Exclude<Course, "">, { disabled: boolean; reason: stri
 
 const LIFF_ID = "2009798529-5aHrd2K7";
 
-const IS_RESERVATION_MAINTENANCE = false;
+const IS_RESERVATION_MAINTENANCE = true;
 
 const initialFormData: ReservationFormData = {
     visitDate: "",
