@@ -13,6 +13,15 @@ type TeppanPref = "" | "鉄板あり" | "希望なし" | "指定不可";
 type Step = 1 | 2 | 3 | 4 | 5;
 type VisitType = "" | "lunch" | "dinner";
 
+type TimeSlotStatus = "available" | "full" | "closed";
+
+type TimeSlotButton = {
+    time: string;
+    status: TimeSlotStatus;
+    label: "空きあり" | "満席" | "受付終了";
+    available: boolean;
+};
+
 type ReservationFormData = {
     visitDate: string;
     visitType: VisitType;
@@ -64,6 +73,137 @@ const weekLabels = ["日", "月", "火", "水", "木", "金", "土"];
 
 const STORE_PHONE_NUMBER = "0297340853";
 const STORE_PHONE_LABEL = "0297-34-0853";
+
+function generateTimeRange(start: string, end: string, stepMinutes = 15): string[] {
+    const toMinutes = (time: string) => {
+        const [hour, minute] = time.split(":").map(Number);
+        return hour * 60 + minute;
+    };
+
+    const toTime = (minutes: number) => {
+        const hour = Math.floor(minutes / 60);
+        const minute = minutes % 60;
+        return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+    };
+
+    const result: string[] = [];
+    let current = toMinutes(start);
+    const endMinutes = toMinutes(end);
+
+    while (current <= endMinutes) {
+        result.push(toTime(current));
+        current += stepMinutes;
+    }
+
+    return result;
+}
+
+function getCandidateTimesForVisitType(
+    visitType: VisitType,
+    businessType: string
+): string[] {
+    if (visitType === "lunch") {
+        return generateTimeRange("11:00", "13:00", 15);
+    }
+
+    if (visitType === "dinner") {
+        if (businessType === "23close") {
+            return generateTimeRange("17:00", "21:00", 15);
+        }
+
+        return generateTimeRange("17:00", "20:00", 15);
+    }
+
+    return [];
+}
+
+function isPastTimeToday(dateString: string, time: string): boolean {
+    if (!dateString || !time) return false;
+
+    const targetDate = new Date(dateString);
+    if (Number.isNaN(targetDate.getTime())) return false;
+
+    const now = new Date();
+
+    const targetDateOnly = new Date(
+        targetDate.getFullYear(),
+        targetDate.getMonth(),
+        targetDate.getDate()
+    );
+
+    const todayOnly = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate()
+    );
+
+    if (targetDateOnly.getTime() !== todayOnly.getTime()) {
+        return false;
+    }
+
+    const [hour, minute] = time.split(":").map(Number);
+    const targetMinutes = hour * 60 + minute;
+    const nowMinutes = now.getHours() * 60 + now.getMinutes();
+
+    return targetMinutes < nowMinutes;
+}
+
+function buildTimeSlotButtons(params: {
+    visitDate: string;
+    visitType: VisitType;
+    businessType: string;
+    availableTimes: string[];
+    lunchDeadlinePassed: boolean;
+    dinnerDeadlinePassed: boolean;
+}): TimeSlotButton[] {
+    const {
+        visitDate,
+        visitType,
+        businessType,
+        availableTimes,
+        lunchDeadlinePassed,
+        dinnerDeadlinePassed,
+    } = params;
+
+    const candidateTimes = getCandidateTimesForVisitType(visitType, businessType);
+    const availableSet = new Set(availableTimes);
+
+    const isDeadlinePassed =
+        visitType === "lunch"
+            ? lunchDeadlinePassed
+            : visitType === "dinner"
+                ? dinnerDeadlinePassed
+                : false;
+
+    return candidateTimes
+        .filter((time) => !isPastTimeToday(visitDate, time))
+        .map((time) => {
+            if (isDeadlinePassed) {
+                return {
+                    time,
+                    status: "closed",
+                    label: "受付終了",
+                    available: false,
+                };
+            }
+
+            if (availableSet.has(time)) {
+                return {
+                    time,
+                    status: "available",
+                    label: "空きあり",
+                    available: true,
+                };
+            }
+
+            return {
+                time,
+                status: "full",
+                label: "満席",
+                available: false,
+            };
+        });
+}
 
 function getDrinkOptions(course: Course): Drink[] {
     switch (course) {
@@ -377,6 +517,7 @@ function Step1DateGuestsTime({
     dinnerAvailableTimes,
     lunchDeadlinePassed,
     dinnerDeadlinePassed,
+    dayBusinessType,
 }: {
     formData: ReservationFormData;
     setFormData: React.Dispatch<React.SetStateAction<ReservationFormData>>;
@@ -400,13 +541,25 @@ function Step1DateGuestsTime({
     dinnerAvailableTimes: string[];
     lunchDeadlinePassed: boolean;
     dinnerDeadlinePassed: boolean;
+    dayBusinessType: string;
 }) {
-    const displayTimes =
+    const availableTimes =
         formData.visitType === "lunch"
             ? lunchAvailableTimes
             : formData.visitType === "dinner"
                 ? dinnerAvailableTimes
                 : [];
+
+    const displayTimeSlots = buildTimeSlotButtons({
+        visitDate: formData.visitDate,
+        visitType: formData.visitType,
+        businessType: dayBusinessType,
+        availableTimes,
+        lunchDeadlinePassed,
+        dinnerDeadlinePassed,
+    });
+
+    const hasAvailableTime = displayTimeSlots.some((slot) => slot.available);
 
     const calendarDays = buildCalendarDays(calendarYear, calendarMonth, calendarStatusMap);
 
@@ -633,7 +786,7 @@ function Step1DateGuestsTime({
                 {!dayAvailabilityLoading &&
                     !dayAvailabilityError &&
                     formData.visitType &&
-                    displayTimes.length === 0 && (
+                    !hasAvailableTime && (
                         <div className="mb-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-5 text-sm text-white/75">
                             {formData.visitType === "lunch" && lunchDeadlinePassed
                                 ? "本日のランチの受付は終了しました。日付・人数・ランチ / ディナーを変更してお試しください。"
@@ -651,22 +804,35 @@ function Step1DateGuestsTime({
                     <div className="relative">
                         <div className="overflow-x-auto">
                             <div className="flex min-w-max gap-2 rounded-2xl bg-black/25 p-3">
-                                {displayTimes.map((time) => (
+                                {displayTimeSlots.map((slot) => (
                                     <button
-                                        key={time}
+                                        key={slot.time}
                                         type="button"
-                                        onClick={() => onStartTimeChange(time)}
-                                        className={`shrink-0 rounded-full border px-5 py-3 text-sm font-bold transition ${formData.startTime === time
+                                        disabled={!slot.available}
+                                        onClick={() => {
+                                            if (!slot.available) return;
+                                            onStartTimeChange(slot.time);
+                                        }}
+                                        className={`shrink-0 rounded-2xl border px-5 py-3 text-center text-sm font-bold transition ${formData.startTime === slot.time
                                             ? "border-yellow-300 bg-yellow-400 text-black"
-                                            : "border-white/20 bg-white/5 text-white hover:bg-white/10"
+                                            : slot.available
+                                                ? "border-white/20 bg-white/5 text-white hover:bg-white/10"
+                                                : slot.status === "closed"
+                                                    ? "cursor-not-allowed border-red-300/20 bg-red-950/25 text-red-200/60"
+                                                    : "cursor-not-allowed border-white/10 bg-white/10 text-white/35"
                                             }`}
                                     >
-                                        {time}
+                                        <span className="block text-[10px] font-black leading-4">
+                                            {slot.label}
+                                        </span>
+                                        <span className="block text-sm font-black leading-5">
+                                            {slot.time}
+                                        </span>
                                     </button>
                                 ))}
                             </div>
                         </div>
-                        {displayTimes.length > 0 && (
+                        {displayTimeSlots.length > 0 && (
                             <p className="mt-2 text-center text-xs font-bold text-white/50">
                                 ← 左右にスクロールできます →
                             </p>
@@ -1887,6 +2053,8 @@ export default function ReservationForm() {
     const [lunchDeadlinePassed, setLunchDeadlinePassed] = useState(false);
     const [dinnerDeadlinePassed, setDinnerDeadlinePassed] = useState(false);
 
+    const [dayBusinessType, setDayBusinessType] = useState("");
+
     const [isPageTransitionLoading, setIsPageTransitionLoading] = useState(false);
 
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -2055,6 +2223,7 @@ export default function ReservationForm() {
             setDinnerAvailableTimes(result.dinnerAvailableTimes ?? []);
             setLunchDeadlinePassed(result.lunchDeadlinePassed ?? false);
             setDinnerDeadlinePassed(result.dinnerDeadlinePassed ?? false);
+            setDayBusinessType(result.businessType ?? "");
         } catch (error) {
             console.error("loadDayAvailability error:", error);
             setDayAvailabilityError("この日の空き時間取得に失敗しました。");
@@ -2062,6 +2231,7 @@ export default function ReservationForm() {
             setDinnerAvailableTimes([]);
             setLunchDeadlinePassed(false);
             setDinnerDeadlinePassed(false);
+            setDayBusinessType("");
         } finally {
             setDayAvailabilityLoading(false);
         }
@@ -2072,6 +2242,7 @@ export default function ReservationForm() {
         setDinnerAvailableTimes([]);
         setLunchDeadlinePassed(false);
         setDinnerDeadlinePassed(false);
+        setDayBusinessType("");
         setDayAvailabilityError("");
         setDayAvailabilityLoading(false);
 
@@ -2096,6 +2267,7 @@ export default function ReservationForm() {
         setDinnerAvailableTimes([]);
         setLunchDeadlinePassed(false);
         setDinnerDeadlinePassed(false);
+        setDayBusinessType("");
         setDayAvailabilityError("");
         setDayAvailabilityLoading(false);
 
@@ -2459,6 +2631,7 @@ export default function ReservationForm() {
                             dinnerAvailableTimes={dinnerAvailableTimes}
                             lunchDeadlinePassed={lunchDeadlinePassed}
                             dinnerDeadlinePassed={dinnerDeadlinePassed}
+                            dayBusinessType={dayBusinessType}
                         />
                     )}
 
