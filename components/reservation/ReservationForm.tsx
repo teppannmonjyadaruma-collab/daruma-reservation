@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import liff from "@line/liff";
 import { fetchCalendarStatus, type CalendarStatusMap } from "@/lib/calendar-cache";
@@ -9,7 +9,12 @@ import { fetchCourseAvailabilityDetail } from "@/lib/course-availability";
 
 type Course = "" | "席のみ" | "だるま満喫" | "鉄板満喫" | "特選だるま";
 type Drink = "" | "なし" | "90" | "120";
-type TeppanPref = "" | "鉄板あり" | "希望なし" | "指定不可";
+type TeppanPref =
+    | ""
+    | "座敷(鉄板有り掘りごたつ)"
+    | "カウンター(鉄板有り)"
+    | "カウンター(鉄板無し)"
+    | "指定不可";
 type Step = 1 | 2 | 3 | 4 | 5;
 type VisitType = "" | "lunch" | "dinner";
 
@@ -37,6 +42,28 @@ type ReservationFormData = {
     firstNameKana: string;
     phone: string;
     note: string;
+};
+
+type CourseAvailability = {
+    seatOnlyAvailable: boolean;
+    course120Available: boolean;
+    course150Available: boolean;
+
+    seatOnlyTeppanAvailable: boolean;
+    course120TeppanAvailable: boolean;
+    course150TeppanAvailable: boolean;
+
+    seatOnlyZashikiAvailable: boolean;
+    seatOnlyIronCounterAvailable: boolean;
+    seatOnlyNoIronCounterAvailable: boolean;
+
+    course120ZashikiAvailable: boolean;
+    course120IronCounterAvailable: boolean;
+    course120NoIronCounterAvailable: boolean;
+
+    course150ZashikiAvailable: boolean;
+    course150IronCounterAvailable: boolean;
+    course150NoIronCounterAvailable: boolean;
 };
 
 type CalendarDay = {
@@ -75,6 +102,12 @@ const weekLabels = ["日", "月", "火", "水", "木", "金", "土"];
 
 const STORE_PHONE_NUMBER = "0297340853";
 const STORE_PHONE_LABEL = "0297-34-0853";
+
+const SEAT_TYPE_PREFS = {
+    ZASHIKI: "座敷(鉄板有り掘りごたつ)",
+    IRON_COUNTER: "カウンター(鉄板有り)",
+    NO_IRON_COUNTER: "カウンター(鉄板無し)",
+} as const;
 
 function generateTimeRange(start: string, end: string, stepMinutes = 15): string[] {
     const toMinutes = (time: string) => {
@@ -221,36 +254,9 @@ function getDrinkOptions(course: Course): Drink[] {
     }
 }
 
-function getTeppanGuidance(adult: number, child: number) {
-    const total = adult + child;
-
-    if (total >= 2 && total <= 4) {
-        return {
-            selectable: true,
-            message: "ご希望がある場合はお選びください。",
-        };
-    }
-
-    if (total === 1) {
-        return {
-            selectable: false,
-            message: "1名様は専用鉄板なしのシェフ前カウンターへのご案内となります。",
-        };
-    }
-
-    return {
-        selectable: false,
-        message: "5名様以上は専用鉄板付き掘りごたつ席へのご案内となります。",
-    };
-}
-
 function getCourseState(params: {
     formData: ReservationFormData;
-    courseAvailability: {
-        seatOnlyAvailable: boolean;
-        course120Available: boolean;
-        course150Available: boolean;
-    } | null;
+    courseAvailability: CourseAvailability | null;
 }): CourseState {
     const { formData, courseAvailability } = params;
 
@@ -508,7 +514,7 @@ function FloatingReservationSummary({
     }
 
     if (currentStep === 4 && formData.teppanPref) {
-        optionTexts.push(`専用鉄板希望：${formData.teppanPref}`);
+        optionTexts.push(`席タイプのご希望：${formData.teppanPref}`);
     }
 
     return createPortal(
@@ -908,11 +914,7 @@ function Step2Course({
     formData: ReservationFormData;
     setFormData: React.Dispatch<React.SetStateAction<ReservationFormData>>;
     setCurrentStep: React.Dispatch<React.SetStateAction<Step>>;
-    courseAvailability: {
-        seatOnlyAvailable: boolean;
-        course120Available: boolean;
-        course150Available: boolean;
-    } | null;
+    courseAvailability: CourseAvailability | null;
     courseAvailabilityLoading: boolean;
     courseAvailabilityError: string;
 }) {
@@ -1575,6 +1577,122 @@ function getDrinkOptionDescription(course: Course, drink: Drink) {
     return "";
 }
 
+function getSeatTypeAvailability(
+    course: Course,
+    seatType: TeppanPref,
+    availability: CourseAvailability | null
+) {
+    if (!availability) return false;
+    if (!seatType || seatType === "指定不可") return false;
+
+    if (course === "席のみ") {
+        if (seatType === SEAT_TYPE_PREFS.ZASHIKI) {
+            return availability.seatOnlyZashikiAvailable;
+        }
+
+        if (seatType === SEAT_TYPE_PREFS.IRON_COUNTER) {
+            return availability.seatOnlyIronCounterAvailable;
+        }
+
+        if (seatType === SEAT_TYPE_PREFS.NO_IRON_COUNTER) {
+            return availability.seatOnlyNoIronCounterAvailable;
+        }
+    }
+
+    if (course === "だるま満喫") {
+        if (seatType === SEAT_TYPE_PREFS.ZASHIKI) {
+            return availability.course120ZashikiAvailable;
+        }
+
+        if (seatType === SEAT_TYPE_PREFS.IRON_COUNTER) {
+            return availability.course120IronCounterAvailable;
+        }
+
+        if (seatType === SEAT_TYPE_PREFS.NO_IRON_COUNTER) {
+            return availability.course120NoIronCounterAvailable;
+        }
+    }
+
+    if (course === "鉄板満喫" || course === "特選だるま") {
+        if (seatType === SEAT_TYPE_PREFS.ZASHIKI) {
+            return availability.course150ZashikiAvailable;
+        }
+
+        if (seatType === SEAT_TYPE_PREFS.IRON_COUNTER) {
+            return availability.course150IronCounterAvailable;
+        }
+
+        if (seatType === SEAT_TYPE_PREFS.NO_IRON_COUNTER) {
+            return availability.course150NoIronCounterAvailable;
+        }
+    }
+
+    return false;
+}
+
+function getSeatTypeOptions(adult: number, child: number) {
+    const total = adult + child;
+
+    if (total <= 0) {
+        return [];
+    }
+
+    if (total === 1) {
+        return [
+            {
+                value: SEAT_TYPE_PREFS.NO_IRON_COUNTER as TeppanPref,
+                label: SEAT_TYPE_PREFS.NO_IRON_COUNTER,
+                description: "1名様はカウンター席へのご案内となります。",
+                selectableByGuestCount: true,
+            },
+        ];
+    }
+
+    if (total >= 2 && total <= 4) {
+        return [
+            {
+                value: SEAT_TYPE_PREFS.ZASHIKI as TeppanPref,
+                label: SEAT_TYPE_PREFS.ZASHIKI,
+                description: "掘りごたつ席でゆったりお過ごしいただけます。",
+                selectableByGuestCount: true,
+            },
+            {
+                value: SEAT_TYPE_PREFS.IRON_COUNTER as TeppanPref,
+                label: SEAT_TYPE_PREFS.IRON_COUNTER,
+                description: "鉄板付きのカウンター席です。",
+                selectableByGuestCount: true,
+            },
+            {
+                value: SEAT_TYPE_PREFS.NO_IRON_COUNTER as TeppanPref,
+                label: SEAT_TYPE_PREFS.NO_IRON_COUNTER,
+                description: "シェフ前のカウンター席です。",
+                selectableByGuestCount: true,
+            },
+        ];
+    }
+
+    return [
+        {
+            value: SEAT_TYPE_PREFS.ZASHIKI as TeppanPref,
+            label: SEAT_TYPE_PREFS.ZASHIKI,
+            description: "5名様以上は座敷席へのご案内となります。",
+            selectableByGuestCount: true,
+        },
+        {
+            value: SEAT_TYPE_PREFS.IRON_COUNTER as TeppanPref,
+            label: SEAT_TYPE_PREFS.IRON_COUNTER,
+            description: "5名様以上はカウンター席をお選びいただけません。",
+            selectableByGuestCount: false,
+        },
+        {
+            value: SEAT_TYPE_PREFS.NO_IRON_COUNTER as TeppanPref,
+            label: SEAT_TYPE_PREFS.NO_IRON_COUNTER,
+            description: "5名様以上はカウンター席をお選びいただけません。",
+            selectableByGuestCount: false,
+        },
+    ];
+}
+
 function Step3Options({
     formData,
     setFormData,
@@ -1582,32 +1700,10 @@ function Step3Options({
 }: {
     formData: ReservationFormData;
     setFormData: React.Dispatch<React.SetStateAction<ReservationFormData>>;
-    courseAvailability: {
-        seatOnlyAvailable: boolean;
-        course120Available: boolean;
-        course150Available: boolean;
-        seatOnlyTeppanAvailable: boolean;
-        course120TeppanAvailable: boolean;
-        course150TeppanAvailable: boolean;
-    } | null;
+    courseAvailability: CourseAvailability | null;
 }) {
     const drinkOptions = getDrinkOptions(formData.course);
-    const teppanGuidance = getTeppanGuidance(formData.adult, formData.child);
-
-    const teppanAvailableForSelectedCourse =
-        formData.course === "席のみ"
-            ? courseAvailability?.seatOnlyTeppanAvailable ?? false
-            : formData.course === "だるま満喫"
-                ? courseAvailability?.course120TeppanAvailable ?? false
-                : formData.course === "鉄板満喫" || formData.course === "特選だるま"
-                    ? courseAvailability?.course150TeppanAvailable ?? false
-                    : false;
-
-    const canSelectTeppan =
-        teppanGuidance.selectable && teppanAvailableForSelectedCourse;
-
     const isSeatOnly = formData.course === "席のみ";
-    const teppanChoices: TeppanPref[] = ["鉄板あり", "希望なし"];
 
     return (
         <div className="space-y-8">
@@ -1678,44 +1774,74 @@ function Step3Options({
             </section>
 
             <section className="rounded-[28px] border border-yellow-500/40 bg-black/25 p-4 md:p-5">
-                <h3 className="mb-2 text-lg font-black text-white">専用鉄板希望</h3>
+                <h3 className="mb-2 text-lg font-black text-white">
+                    席タイプのご希望
+                </h3>
 
-                <p
-                    className={`mb-4 text-sm leading-7 ${teppanGuidance.selectable && teppanAvailableForSelectedCourse
-                        ? "text-white/70"
-                        : "font-bold text-yellow-200"
-                        }`}
-                >
-                    {!teppanGuidance.selectable
-                        ? teppanGuidance.message
-                        : !teppanAvailableForSelectedCourse
-                            ? "現在、専用鉄板席の空きがないため「鉄板あり」は選択できません。"
-                            : "ご希望がある場合はお選びください。"}
+                <p className="mb-4 text-sm leading-7 text-white/70">
+                    空き状況により、ご希望の席タイプをお選びいただけない場合があります。
                 </p>
 
-                <div className="grid grid-cols-2 gap-3">
-                    {teppanChoices.map((option) => {
-                        const disabled =
-                            !teppanGuidance.selectable ||
-                            (option === "鉄板あり" && !teppanAvailableForSelectedCourse);
+                <div className="grid gap-3">
+                    {getSeatTypeOptions(formData.adult, formData.child).map((option) => {
+                        const availableBySeat = getSeatTypeAvailability(
+                            formData.course,
+                            option.value,
+                            courseAvailability
+                        );
+
+                        const disabled = !option.selectableByGuestCount || !availableBySeat;
+
+                        const statusLabel = !option.selectableByGuestCount
+                            ? "人数条件により選択不可"
+                            : availableBySeat
+                                ? "選択できます"
+                                : "満席";
 
                         return (
                             <button
-                                key={option}
+                                key={option.value}
                                 type="button"
                                 disabled={disabled}
                                 onClick={() => {
                                     if (disabled) return;
-                                    setFormData((prev) => ({ ...prev, teppanPref: option }));
+                                    setFormData((prev) => ({
+                                        ...prev,
+                                        teppanPref: option.value,
+                                    }));
                                 }}
-                                className={`rounded-2xl border px-4 py-4 text-sm font-black transition ${disabled
+                                className={`rounded-2xl border px-4 py-4 text-left transition ${disabled
                                     ? "cursor-not-allowed border-white/10 bg-white/5 text-white/35"
-                                    : formData.teppanPref === option
+                                    : formData.teppanPref === option.value
                                         ? "border-yellow-300 bg-yellow-400 text-black"
                                         : "border-white/20 bg-white/5 text-white hover:bg-white/10"
                                     }`}
                             >
-                                {option}
+                                <span className="block text-sm font-black">
+                                    {option.label}
+                                </span>
+
+                                <span
+                                    className={`mt-1 block text-xs font-bold leading-5 ${disabled
+                                        ? "text-white/30"
+                                        : formData.teppanPref === option.value
+                                            ? "text-black/70"
+                                            : "text-white/65"
+                                        }`}
+                                >
+                                    {option.description}
+                                </span>
+
+                                <span
+                                    className={`mt-2 inline-block rounded-full px-2 py-1 text-[10px] font-black ${disabled
+                                        ? "bg-white/10 text-white/35"
+                                        : formData.teppanPref === option.value
+                                            ? "bg-black/15 text-black/75"
+                                            : "bg-white/10 text-white/70"
+                                        }`}
+                                >
+                                    {statusLabel}
+                                </span>
                             </button>
                         );
                     })}
@@ -1947,10 +2073,12 @@ function getDrinkLabel(drink: Drink) {
 
 function getTeppanPrefLabel(teppanPref: TeppanPref) {
     switch (teppanPref) {
-        case "鉄板あり":
-            return "あり";
-        case "希望なし":
-            return "なし";
+        case SEAT_TYPE_PREFS.ZASHIKI:
+            return SEAT_TYPE_PREFS.ZASHIKI;
+        case SEAT_TYPE_PREFS.IRON_COUNTER:
+            return SEAT_TYPE_PREFS.IRON_COUNTER;
+        case SEAT_TYPE_PREFS.NO_IRON_COUNTER:
+            return SEAT_TYPE_PREFS.NO_IRON_COUNTER;
         default:
             return "";
     }
@@ -2004,8 +2132,7 @@ function Step5Confirm({
     const drinkLabel = getDrinkLabel(formData.drink);
     const teppanPrefLabel = getTeppanPrefLabel(formData.teppanPref);
 
-    const showTeppanPref =
-        formData.teppanPref === "鉄板あり" || formData.teppanPref === "希望なし";
+    const showTeppanPref = Boolean(teppanPrefLabel);
 
     return (
         <div className="space-y-6">
@@ -2076,7 +2203,7 @@ function Step5Confirm({
 
                         {showTeppanPref && (
                             <ConfirmRow
-                                label="専用鉄板希望"
+                                label="席タイプのご希望"
                                 value={teppanPrefLabel}
                             />
                         )}
@@ -2154,14 +2281,8 @@ export default function ReservationForm() {
 
     const [courseAvailabilityLoading, setCourseAvailabilityLoading] = useState(false);
     const [courseAvailabilityError, setCourseAvailabilityError] = useState("");
-    const [courseAvailability, setCourseAvailability] = useState<{
-        seatOnlyAvailable: boolean;
-        course120Available: boolean;
-        course150Available: boolean;
-        seatOnlyTeppanAvailable: boolean;
-        course120TeppanAvailable: boolean;
-        course150TeppanAvailable: boolean;
-    } | null>(null);
+    const [courseAvailability, setCourseAvailability] =
+        useState<CourseAvailability | null>(null);
 
     const [lunchDeadlinePassed, setLunchDeadlinePassed] = useState(false);
     const [dinnerDeadlinePassed, setDinnerDeadlinePassed] = useState(false);
@@ -2243,16 +2364,11 @@ export default function ReservationForm() {
     const normalizeBeforeNext = () => {
         if (formData.course) {
             const drinkOptions = getDrinkOptions(formData.course);
-            const teppanGuidance = getTeppanGuidance(formData.adult, formData.child);
 
             setFormData((prev) => ({
                 ...prev,
                 drink: drinkOptions.includes(prev.drink) ? prev.drink : drinkOptions[0] ?? "",
-                teppanPref: teppanGuidance.selectable
-                    ? (prev.teppanPref === "鉄板あり" || prev.teppanPref === "希望なし"
-                        ? prev.teppanPref
-                        : "")
-                    : "",
+                teppanPref: "",
             }));
         }
     };
@@ -2447,12 +2563,25 @@ export default function ReservationForm() {
             );
 
             setCourseAvailability({
-                seatOnlyAvailable: result.seatOnlyAvailable,
-                course120Available: result.course120Available,
-                course150Available: result.course150Available,
-                seatOnlyTeppanAvailable: result.seatOnlyTeppanAvailable ?? false,
-                course120TeppanAvailable: result.course120TeppanAvailable ?? false,
-                course150TeppanAvailable: result.course150TeppanAvailable ?? false,
+                seatOnlyAvailable: Boolean(result.seatOnlyAvailable),
+                course120Available: Boolean(result.course120Available),
+                course150Available: Boolean(result.course150Available),
+
+                seatOnlyTeppanAvailable: Boolean(result.seatOnlyTeppanAvailable),
+                course120TeppanAvailable: Boolean(result.course120TeppanAvailable),
+                course150TeppanAvailable: Boolean(result.course150TeppanAvailable),
+
+                seatOnlyZashikiAvailable: Boolean(result.seatOnlyZashikiAvailable),
+                seatOnlyIronCounterAvailable: Boolean(result.seatOnlyIronCounterAvailable),
+                seatOnlyNoIronCounterAvailable: Boolean(result.seatOnlyNoIronCounterAvailable),
+
+                course120ZashikiAvailable: Boolean(result.course120ZashikiAvailable),
+                course120IronCounterAvailable: Boolean(result.course120IronCounterAvailable),
+                course120NoIronCounterAvailable: Boolean(result.course120NoIronCounterAvailable),
+
+                course150ZashikiAvailable: Boolean(result.course150ZashikiAvailable),
+                course150IronCounterAvailable: Boolean(result.course150IronCounterAvailable),
+                course150NoIronCounterAvailable: Boolean(result.course150NoIronCounterAvailable),
             });
 
             return true;
@@ -2500,7 +2629,6 @@ export default function ReservationForm() {
 
         if (currentStep === 3) {
             const drinkOptions = getDrinkOptions(formData.course);
-            const teppanGuidance = getTeppanGuidance(formData.adult, formData.child);
 
             const needsDrink =
                 formData.course !== "席のみ" && drinkOptions.length > 1;
@@ -2509,8 +2637,8 @@ export default function ReservationForm() {
                 return setError("飲み放題を選択してください。");
             }
 
-            if (teppanGuidance.selectable && !formData.teppanPref) {
-                return setError("専用鉄板希望を選択してください。");
+            if (!formData.teppanPref) {
+                return setError("席タイプのご希望を選択してください。");
             }
 
             setCurrentStep(4);

@@ -3,12 +3,34 @@ export type CourseAvailabilityDetail = {
   adult: number;
   child: number;
   startTime: string;
+
   seatOnlyAvailable: boolean;
   course120Available: boolean;
   course150Available: boolean;
+
+  // 旧仕様との互換用
   seatOnlyTeppanAvailable: boolean;
   course120TeppanAvailable: boolean;
   course150TeppanAvailable: boolean;
+
+  // 席タイプ別：席のみ
+  seatOnlyZashikiAvailable: boolean;
+  seatOnlyIronCounterAvailable: boolean;
+  seatOnlyNoIronCounterAvailable: boolean;
+
+  // 席タイプ別：120分コース
+  course120ZashikiAvailable: boolean;
+  course120IronCounterAvailable: boolean;
+  course120NoIronCounterAvailable: boolean;
+
+  // 席タイプ別：150分コース
+  course150ZashikiAvailable: boolean;
+  course150IronCounterAvailable: boolean;
+  course150NoIronCounterAvailable: boolean;
+
+  seatOnlyDeadlinePassed?: boolean;
+  courseDeadlinePassed?: boolean;
+
   holidayName: string;
   businessType: "22close" | "23close" | "closed";
 };
