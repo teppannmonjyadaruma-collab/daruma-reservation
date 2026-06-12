@@ -1640,8 +1640,20 @@ function getSeatTypeOptions(adult: number, child: number) {
     if (total === 1) {
         return [
             {
+                value: SEAT_TYPE_PREFS.ZASHIKI as TeppanPref,
+                label: "座敷 (鉄板有り掘りごたつ)",
+                description: "1名様はお選びいただけません。2名様以上でご案内可能です。",
+                selectableByGuestCount: false,
+            },
+            {
+                value: SEAT_TYPE_PREFS.IRON_COUNTER as TeppanPref,
+                label: "シェフ前カウンター (鉄板有り)",
+                description: "1名様はお選びいただけません。2名様以上でご案内可能です。",
+                selectableByGuestCount: false,
+            },
+            {
                 value: SEAT_TYPE_PREFS.NO_IRON_COUNTER as TeppanPref,
-                label: SEAT_TYPE_PREFS.NO_IRON_COUNTER,
+                label: "シェフ前カウンター (鉄板無し)",
                 description: "1名様はカウンター席へのご案内となります。",
                 selectableByGuestCount: true,
             },
@@ -1652,20 +1664,20 @@ function getSeatTypeOptions(adult: number, child: number) {
         return [
             {
                 value: SEAT_TYPE_PREFS.ZASHIKI as TeppanPref,
-                label: SEAT_TYPE_PREFS.ZASHIKI,
+                label: "座敷 (鉄板有り掘りごたつ)",
                 description: "掘りごたつ席でゆったりお過ごしいただけます。",
                 selectableByGuestCount: true,
             },
             {
                 value: SEAT_TYPE_PREFS.IRON_COUNTER as TeppanPref,
-                label: SEAT_TYPE_PREFS.IRON_COUNTER,
-                description: "鉄板付きのカウンター席です。",
+                label: "シェフ前カウンター (鉄板有り)",
+                description: "専用鉄板付きのシェフ前カウンター席です。",
                 selectableByGuestCount: true,
             },
             {
                 value: SEAT_TYPE_PREFS.NO_IRON_COUNTER as TeppanPref,
-                label: SEAT_TYPE_PREFS.NO_IRON_COUNTER,
-                description: "シェフ前のカウンター席です。",
+                label: "シェフ前カウンター (鉄板無し)",
+                description: "専用鉄板無しのシェフ前カウンター席です。",
                 selectableByGuestCount: true,
             },
         ];
@@ -1674,19 +1686,19 @@ function getSeatTypeOptions(adult: number, child: number) {
     return [
         {
             value: SEAT_TYPE_PREFS.ZASHIKI as TeppanPref,
-            label: SEAT_TYPE_PREFS.ZASHIKI,
+            label: "座敷 (鉄板有り掘りごたつ)",
             description: "5名様以上は座敷席へのご案内となります。",
             selectableByGuestCount: true,
         },
         {
             value: SEAT_TYPE_PREFS.IRON_COUNTER as TeppanPref,
-            label: SEAT_TYPE_PREFS.IRON_COUNTER,
+            label: "シェフ前カウンター (鉄板有り)",
             description: "5名様以上はカウンター席をお選びいただけません。",
             selectableByGuestCount: false,
         },
         {
             value: SEAT_TYPE_PREFS.NO_IRON_COUNTER as TeppanPref,
-            label: SEAT_TYPE_PREFS.NO_IRON_COUNTER,
+            label: "シェフ前カウンター (鉄板無し)",
             description: "5名様以上はカウンター席をお選びいただけません。",
             selectableByGuestCount: false,
         },
@@ -1793,7 +1805,7 @@ function Step3Options({
                         const disabled = !option.selectableByGuestCount || !availableBySeat;
 
                         const statusLabel = !option.selectableByGuestCount
-                            ? "人数条件により選択不可"
+                            ? "この人数では選択できません"
                             : availableBySeat
                                 ? "選択できます"
                                 : "満席";
