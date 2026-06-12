@@ -11,9 +11,9 @@ type Course = "" | "席のみ" | "だるま満喫" | "鉄板満喫" | "特選だ
 type Drink = "" | "なし" | "90" | "120";
 type TeppanPref =
     | ""
-    | "座敷(鉄板有り掘りごたつ)"
-    | "カウンター(鉄板有り)"
-    | "カウンター(鉄板無し)"
+    | "座敷"
+    | "鉄板有(カ)"
+    | "鉄板無(カ)"
     | "指定不可";
 type Step = 1 | 2 | 3 | 4 | 5;
 type VisitType = "" | "lunch" | "dinner";
@@ -79,7 +79,7 @@ type CourseState = Record<Exclude<Course, "">, { disabled: boolean; reason: stri
 
 const LIFF_ID = "2009798529-5aHrd2K7";
 
-const IS_RESERVATION_MAINTENANCE = true;
+const IS_RESERVATION_MAINTENANCE = false;
 
 const initialFormData: ReservationFormData = {
     visitDate: "",
@@ -104,9 +104,9 @@ const STORE_PHONE_NUMBER = "0297340853";
 const STORE_PHONE_LABEL = "0297-34-0853";
 
 const SEAT_TYPE_PREFS = {
-    ZASHIKI: "座敷(鉄板有り掘りごたつ)",
-    IRON_COUNTER: "カウンター(鉄板有り)",
-    NO_IRON_COUNTER: "カウンター(鉄板無し)",
+    ZASHIKI: "座敷",
+    IRON_COUNTER: "鉄板有(カ)",
+    NO_IRON_COUNTER: "鉄板無(カ)",
 } as const;
 
 function generateTimeRange(start: string, end: string, stepMinutes = 15): string[] {
