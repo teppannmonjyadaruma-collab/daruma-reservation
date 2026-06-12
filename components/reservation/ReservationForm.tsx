@@ -1443,7 +1443,7 @@ function Step2Course({
                                                                     isHeading
                                                                         ? "pt-4 text-lg font-bold tracking-[0.04em] text-transparent bg-clip-text"
                                                                         : isNote
-                                                                            ? "text-xs font-bold leading-6 text-white/60"
+                                                                            ? "text-xs font-bold leading-4 text-white/60"
                                                                             : "text-sm leading-8 text-white/90"
                                                                 }
                                                                 style={
