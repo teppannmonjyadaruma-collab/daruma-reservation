@@ -1482,6 +1482,25 @@ function Step2Course({
     );
 }
 
+function getDrinkOptionDescription(course: Course, drink: Drink) {
+    if (drink === "なし") {
+        return "コース料金のみ";
+    }
+
+    if (course === "だるま満喫" && drink === "90") {
+        return "お一人様 ＋1,500円（税込）";
+    }
+
+    if (
+        (course === "鉄板満喫" || course === "特選だるま") &&
+        drink === "120"
+    ) {
+        return "お一人様 ＋2,000円（税込）";
+    }
+
+    return "";
+}
+
 function Step3Options({
     formData,
     setFormData,
@@ -1540,9 +1559,10 @@ function Step3Options({
                             option === "なし"
                                 ? "飲み放題なし"
                                 : option === "90"
-                                    ? "90分飲み放題を付ける"
-                                    : "120分飲み放題を付ける";
+                                    ? "90分飲み放題あり"
+                                    : "120分飲み放題あり";
 
+                        const description = getDrinkOptionDescription(formData.course, option);
                         const disabled = isSeatOnly && option !== "なし";
 
                         return (
@@ -1554,14 +1574,29 @@ function Step3Options({
                                     if (disabled) return;
                                     setFormData((prev) => ({ ...prev, drink: option }));
                                 }}
-                                className={`rounded-2xl border px-4 py-4 text-sm font-black transition ${disabled
+                                className={`rounded-2xl border px-4 py-4 text-center transition ${disabled
                                     ? "cursor-not-allowed border-white/10 bg-white/5 text-white/35"
                                     : formData.drink === option
                                         ? "border-yellow-300 bg-yellow-400 text-black"
                                         : "border-white/20 bg-white/5 text-white hover:bg-white/10"
                                     }`}
                             >
-                                {label}
+                                <span className="block text-sm font-black">
+                                    {label}
+                                </span>
+
+                                {description && (
+                                    <span
+                                        className={`mt-1 block text-xs font-bold leading-5 ${disabled
+                                                ? "text-white/30"
+                                                : formData.drink === option
+                                                    ? "text-black/70"
+                                                    : "text-white/65"
+                                            }`}
+                                    >
+                                        {description}
+                                    </span>
+                                )}
                             </button>
                         );
                     })}
