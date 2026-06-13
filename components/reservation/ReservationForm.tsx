@@ -1592,7 +1592,7 @@ function Step2Course({
                                                                     key={index}
                                                                     className="mx-auto my-3 max-w-xl rounded-xl border border-yellow-400/15 bg-yellow-400/5 px-3 py-3 text-left"
                                                                 >
-                                                                    <p className="mb-2 text-[11px] font-black justify-center text-yellow-200">
+                                                                    <p className="mb-2 text-center text-[11px] font-black text-yellow-200">
                                                                         焼きそばについて
                                                                     </p>
 
