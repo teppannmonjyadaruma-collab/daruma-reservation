@@ -1147,9 +1147,10 @@ function Step2Course({
 ※カットして提供いたします。
 
 〜焼きそば (シェア)〜
-[変更料理:牡蠣焼きそば] 苦手な方は、ミックス焼きそばに変更できます。
+[変更可料理]牡蠣焼きそば
 ※通常単品1皿分を2名様でシェアしていただきます。
-[焼きそば味変更] コースの焼きそばは、基本ソース味でのご提供となります。塩味へ変更をご希望の場合は、この後の「ご要望・備考」欄に、「焼きそば塩味へ変更希望」の旨と変更希望の人数をあわせてご記入ください。
+[焼きそば変更可まとめ]苦手な方は、ミックス焼きそばに変更できます。変更をご希望の場合は、この後の「ご要望・備考」欄に、変更希望商品・変更希望人数をあわせてご記入ください。
+[焼きそば味変更]コースの焼きそばは、基本ソース味でのご提供となります。塩味へ変更をご希望の場合は、この後の「ご要望・備考」欄に、「焼きそば塩味へ変更希望」の旨と変更希望の人数をあわせてご記入ください。
 
 〜お好み焼き (シェア)〜
 特だるま焼
@@ -1491,6 +1492,7 @@ function Step2Course({
                                                         const isNote = trimmed.startsWith("※");
                                                         const changeableDishMatch = trimmed.match(/^\[変更可料理\](.+)$/);
                                                         const changeSummaryMatch = trimmed.match(/^\[変更可まとめ\](.+)$/);
+                                                        const yakisobaChangeSummaryMatch = trimmed.match(/^\[焼きそば変更可まとめ\](.+)$/);
                                                         const changeDishMatch = trimmed.match(/^\[変更料理:(.+?)\]\s*(.+)$/);
                                                         const isChangeNote = trimmed.startsWith("[変更可]");
                                                         const isChangeRequestNote = trimmed.startsWith("[変更希望]");
@@ -1516,6 +1518,40 @@ function Step2Course({
 
                                                         if (changeSummaryMatch) {
                                                             const description = changeSummaryMatch[1].trim();
+                                                            const splitKeyword = "変更をご希望の場合は";
+                                                            const [mainText, requestText] = description.split(splitKeyword);
+
+                                                            return (
+                                                                <div
+                                                                    key={index}
+                                                                    className="mx-auto my-3 max-w-xl rounded-xl border border-yellow-400/15 bg-yellow-400/5 px-3 py-3 text-left"
+                                                                >
+                                                                    <div className="mb-2 flex items-center gap-2">
+                                                                        <span className="inline-flex rounded-full bg-yellow-400 px-2.5 py-1 text-[10px] font-black leading-none text-black">
+                                                                            変更可
+                                                                        </span>
+
+                                                                        <p className="text-[11px] font-black text-yellow-200">
+                                                                            のお料理について
+                                                                        </p>
+                                                                    </div>
+
+                                                                    <p className="text-[11px] font-bold leading-6 text-white/65">
+                                                                        {mainText.trim()}
+                                                                    </p>
+
+                                                                    {requestText && (
+                                                                        <p className="mt-2 text-[11px] font-bold leading-6 text-yellow-100/75">
+                                                                            {splitKeyword}
+                                                                            {requestText.trim()}
+                                                                        </p>
+                                                                    )}
+                                                                </div>
+                                                            );
+                                                        }
+
+                                                        if (yakisobaChangeSummaryMatch) {
+                                                            const description = yakisobaChangeSummaryMatch[1].trim();
                                                             const splitKeyword = "変更をご希望の場合は";
                                                             const [mainText, requestText] = description.split(splitKeyword);
 
