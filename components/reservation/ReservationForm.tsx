@@ -1516,19 +1516,34 @@ function Step2Course({
 
                                                         if (changeSummaryMatch) {
                                                             const description = changeSummaryMatch[1].trim();
+                                                            const splitKeyword = "変更をご希望の場合は";
+                                                            const [mainText, requestText] = description.split(splitKeyword);
 
                                                             return (
                                                                 <div
                                                                     key={index}
                                                                     className="mx-auto my-3 max-w-xl rounded-xl border border-yellow-400/15 bg-yellow-400/5 px-3 py-3 text-left"
                                                                 >
-                                                                    <p className="mb-1 text-[11px] font-black text-yellow-200">
-                                                                        「変更可」のお料理について
-                                                                    </p>
+                                                                    <div className="mb-2 flex items-center gap-2">
+                                                                        <span className="inline-flex rounded-full bg-yellow-400 px-2.5 py-1 text-[10px] font-black leading-none text-black">
+                                                                            変更可
+                                                                        </span>
+
+                                                                        <p className="text-[11px] font-black text-yellow-200">
+                                                                            のお料理について
+                                                                        </p>
+                                                                    </div>
 
                                                                     <p className="text-[11px] font-bold leading-6 text-white/65">
-                                                                        {description}
+                                                                        {mainText.trim()}
                                                                     </p>
+
+                                                                    {requestText && (
+                                                                        <p className="mt-2 text-[11px] font-bold leading-6 text-yellow-100/75">
+                                                                            {splitKeyword}
+                                                                            {requestText.trim()}
+                                                                        </p>
+                                                                    )}
                                                                 </div>
                                                             );
                                                         }
