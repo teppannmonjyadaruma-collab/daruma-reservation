@@ -947,7 +947,6 @@ function Step2Course({
     courseAvailabilityError: string;
 }) {
     const [detailCourseKey, setDetailCourseKey] = useState<Exclude<Course, ""> | null>(null);
-    const [detailImageIndex, setDetailImageIndex] = useState(0);
 
     const courseState = getCourseState({
         formData,
@@ -960,7 +959,7 @@ function Step2Course({
         badge?: string;
         price?: string;
         imageSrc: string;
-        imageGallery: string[];
+        detailImages: string[];
         seatTime: string;
         deadline: string;
         items: string;
@@ -973,8 +972,12 @@ function Step2Course({
             {
                 key: "席のみ",
                 title: "お席のみのご予約",
-                imageSrc: "/temp-photo.jpg",
-                imageGallery: ["/temp-photo.jpg"],
+                imageSrc: "/reservation/seat-only-1.jpg",
+                detailImages: [
+                    "/reservation/seat-only-1.jpg",
+                    "/reservation/seat-only-2.jpg",
+                    "/reservation/seat-only-3.jpg",
+                ],
                 price: "",
                 seatTime: "昼：90分\n夜：120分",
                 deadline: "昼：当日13:00\n夜：当日20:00",
@@ -997,14 +1000,8 @@ function Step2Course({
                 key: "だるま満喫",
                 title: "だるま満喫コース",
                 badge: "おすすめ",
-                imageSrc: "/temp-photo.jpg",
-                imageGallery: [
-                    "/temp-photo.jpg",
-                    "/temp-photo.jpg",
-                    "/temp-photo.jpg",
-                    "/temp-photo.jpg",
-                    "/temp-photo.jpg",
-                ],
+                imageSrc: "/reservation/teppan-course.png",
+                detailImages: ["/reservation/teppan-course.png"],
                 price: "2,980円（税込）／1名様",
                 seatTime: "120分",
                 deadline: "ご利用前日22:00",
@@ -1057,14 +1054,8 @@ function Step2Course({
             {
                 key: "鉄板満喫",
                 title: "鉄板満喫コース",
-                imageSrc: "/temp-photo.jpg",
-                imageGallery: [
-                    "/temp-photo.jpg",
-                    "/temp-photo.jpg",
-                    "/temp-photo.jpg",
-                    "/temp-photo.jpg",
-                    "/temp-photo.jpg",
-                ],
+                imageSrc: "/reservation/teppan-course.png",
+                detailImages: ["/reservation/teppan-course.png"],
                 price: "3,980円（税込）／1名様",
                 seatTime: "150分",
                 deadline: "ご利用前日22:00",
@@ -1119,14 +1110,8 @@ function Step2Course({
             {
                 key: "特選だるま",
                 title: "特選だるまコース",
-                imageSrc: "/temp-photo.jpg",
-                imageGallery: [
-                    "/temp-photo.jpg",
-                    "/temp-photo.jpg",
-                    "/temp-photo.jpg",
-                    "/temp-photo.jpg",
-                    "/temp-photo.jpg",
-                ],
+                imageSrc: "/reservation/tokusen-course.png",
+                detailImages: ["/reservation/tokusen-course.jpg"],
                 price: "5,980円（税込）／1名様",
                 seatTime: "150分",
                 deadline: "ご利用前日22:00",
@@ -1210,10 +1195,6 @@ function Step2Course({
     }, [detailCourse]);
 
     const detailState = detailCourse ? courseState[detailCourse.key] : null;
-    const detailMainImage =
-        detailCourse && detailCourse.imageGallery[detailImageIndex]
-            ? detailCourse.imageGallery[detailImageIndex]
-            : detailCourse?.imageSrc;
 
     return (
         <div>
@@ -1370,7 +1351,6 @@ function Step2Course({
                                             type="button"
                                             onClick={() => {
                                                 setDetailCourseKey(course.key);
-                                                setDetailImageIndex(0);
                                             }}
                                             className="rounded-2xl border border-white/20 bg-white/5 px-5 py-3 text-sm font-black text-white transition hover:bg-white/10"
                                         >
@@ -1441,37 +1421,22 @@ function Step2Course({
                                     </div>
 
                                     <div className="max-h-[calc(92vh-88px)] overflow-y-auto px-5 py-5 md:px-7">
-                                        <div className="mb-5 overflow-hidden rounded-[24px] border border-white/10 bg-black/5">
-                                            <div className="aspect-[4/3] w-full overflow-hidden">
-                                                <img
-                                                    src={detailMainImage}
-                                                    alt={detailCourse.title}
-                                                    className="h-full w-full object-cover"
-                                                />
-                                            </div>
-                                        </div>
-
-                                        {detailCourse.imageGallery.length > 1 && (
-                                            <div className="mb-6 flex gap-2 overflow-x-auto pb-1">
-                                                {detailCourse.imageGallery.map((src, index) => (
-                                                    <button
-                                                        key={`${detailCourse.key}-${index}`}
-                                                        type="button"
-                                                        onClick={() => setDetailImageIndex(index)}
-                                                        className={`shrink-0 overflow-hidden rounded-2xl border transition ${detailImageIndex === index
-                                                            ? "border-yellow-300"
-                                                            : "border-white/10"
-                                                            }`}
-                                                    >
+                                        <div className="mb-6 grid gap-4">
+                                            {detailCourse.detailImages.map((src, index) => (
+                                                <div
+                                                    key={`${detailCourse.key}-detail-image-${index}`}
+                                                    className="overflow-hidden rounded-[24px] border border-white/10 bg-black/5"
+                                                >
+                                                    <div className="aspect-[4/3] w-full overflow-hidden">
                                                         <img
                                                             src={src}
                                                             alt={`${detailCourse.title} ${index + 1}`}
-                                                            className="h-20 w-20 object-cover"
+                                                            className="h-full w-full object-cover"
                                                         />
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        )}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
 
                                         <div className="mb-5">
                                             {detailCourse.key === "席のみ" ? (
