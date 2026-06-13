@@ -507,7 +507,7 @@ function FloatingReservationSummary({
 
     const optionTexts: string[] = [];
 
-    if (currentStep === 4 && formData.drink) {
+    if (currentStep === 4 && formData.course !== "席のみ" && formData.drink) {
         optionTexts.push(
             `飲み放題：${formData.drink === "なし" ? "なし" : `${formData.drink}分`}`
         );
@@ -1721,69 +1721,59 @@ function Step3Options({
         <div className="space-y-8">
             <h2 className="mb-3 text-lg font-black text-yellow-300 md:text-xl">STEP5 オプションを選ぶ</h2>
 
-            <section className="rounded-[28px] border border-yellow-500/40 bg-black/25 p-4 md:p-5">
-                <h3 className="mb-2 text-lg font-black text-white">飲み放題を選ぶ</h3>
+            {!isSeatOnly && (
+                <section className="rounded-[28px] border border-yellow-500/40 bg-black/25 p-4 md:p-5">
+                    <h3 className="mb-2 text-lg font-black text-white">飲み放題を選ぶ</h3>
 
-                <p
-                    className={`mb-4 text-sm leading-7 ${isSeatOnly ? "font-bold text-yellow-200" : "text-white/70"
-                        }`}
-                >
-                    {isSeatOnly
-                        ? "飲み放題はコースご予約時のみのご案内となります。"
-                        : formData.course === "だるま満喫"
+                    <p className="mb-4 text-sm leading-7 text-white/70">
+                        {formData.course === "だるま満喫"
                             ? "だるま満喫コースは、90分飲み放題を追加できます。"
                             : "このコースは、120分飲み放題を追加できます。"}
-                </p>
+                    </p>
 
-                <div className="grid grid-cols-2 gap-3">
-                    {(isSeatOnly ? (["なし", "90"] as Drink[]) : drinkOptions).map((option) => {
-                        const label =
-                            option === "なし"
-                                ? "飲み放題なし"
-                                : option === "90"
-                                    ? "90分飲み放題あり"
-                                    : "120分飲み放題あり";
+                    <div className="grid grid-cols-2 gap-3">
+                        {drinkOptions.map((option) => {
+                            const label =
+                                option === "なし"
+                                    ? "飲み放題なし"
+                                    : option === "90"
+                                        ? "90分飲み放題あり"
+                                        : "120分飲み放題あり";
 
-                        const description = getDrinkOptionDescription(formData.course, option);
-                        const disabled = isSeatOnly && option !== "なし";
+                            const description = getDrinkOptionDescription(formData.course, option);
 
-                        return (
-                            <button
-                                key={option}
-                                type="button"
-                                disabled={disabled}
-                                onClick={() => {
-                                    if (disabled) return;
-                                    setFormData((prev) => ({ ...prev, drink: option }));
-                                }}
-                                className={`rounded-2xl border px-4 py-4 text-center transition ${disabled
-                                    ? "cursor-not-allowed border-white/10 bg-white/5 text-white/35"
-                                    : formData.drink === option
+                            return (
+                                <button
+                                    key={option}
+                                    type="button"
+                                    onClick={() => {
+                                        setFormData((prev) => ({ ...prev, drink: option }));
+                                    }}
+                                    className={`rounded-2xl border px-4 py-4 text-center transition ${formData.drink === option
                                         ? "border-yellow-300 bg-yellow-400 text-black"
                                         : "border-white/20 bg-white/5 text-white hover:bg-white/10"
-                                    }`}
-                            >
-                                <span className="block text-sm font-black">
-                                    {label}
-                                </span>
+                                        }`}
+                                >
+                                    <span className="block text-sm font-black">
+                                        {label}
+                                    </span>
 
-                                {description && (
-                                    <span
-                                        className={`mt-1 block text-xs font-bold leading-5 ${disabled
-                                            ? "text-white/30"
-                                            : formData.drink === option
+                                    {description && (
+                                        <span
+                                            className={`mt-1 block text-xs font-bold leading-5 ${formData.drink === option
                                                 ? "text-black/70"
                                                 : "text-white/65"
-                                            }`}
-                                    >
-                                        {description}
-                                    </span>
-                                )}
-                            </button>
-                        );
-                    })}
-                </div>
-            </section>
+                                                }`}
+                                        >
+                                            {description}
+                                        </span>
+                                    )}
+                                </button>
+                            );
+                        })}
+                    </div>
+                </section>
+            )}
 
             <section className="rounded-[28px] border border-yellow-500/40 bg-black/25 p-4 md:p-5">
                 <h3 className="mb-2 text-lg font-black text-white">
@@ -2208,7 +2198,7 @@ function Step5Confirm({
                             value={courseLabel}
                         />
 
-                        {drinkLabel && (
+                        {formData.course !== "席のみ" && drinkLabel && (
                             <ConfirmRow
                                 label="飲み放題"
                                 value={drinkLabel}
