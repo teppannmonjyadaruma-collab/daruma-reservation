@@ -1521,7 +1521,7 @@ function Step2Course({
                                                             return (
                                                                 <div
                                                                     key={index}
-                                                                    className="mx-auto my-3 max-w-xl rounded-xl border border-yellow-400/15 bg-yellow-400/5 px-3 py-3 text-left"
+                                                                    className="mx-auto my-3 max-w-xl rounded-xl border border-yellow-400/15 bg-yellow-400/5 px-4 py-3 text-center"
                                                                 >
                                                                     <div className="mb-2 flex items-center gap-2">
                                                                         <span className="inline-flex rounded-full bg-yellow-400 px-2.5 py-1 text-[10px] font-black leading-none text-black">
@@ -1555,7 +1555,7 @@ function Step2Course({
                                                             return (
                                                                 <div
                                                                     key={index}
-                                                                    className="mx-auto my-3 max-w-xl rounded-xl border border-yellow-400/15 bg-yellow-400/5 px-3 py-3 text-left"
+                                                                    className="mx-auto my-3 max-w-xl rounded-xl border border-yellow-400/15 bg-yellow-400/5 px-4 py-3 text-center"
                                                                 >
                                                                     <div className="mb-2 flex items-center gap-2">
                                                                         <span className="inline-flex rounded-full bg-yellow-400 px-2.5 py-1 text-[10px] font-black leading-none text-black">
