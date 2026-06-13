@@ -1493,7 +1493,6 @@ function Step2Course({
                                                         const changeableDishMatch = trimmed.match(/^\[変更可料理\](.+)$/);
                                                         const changeSummaryMatch = trimmed.match(/^\[変更可まとめ\](.+)$/);
                                                         const yakisobaChangeSummaryMatch = trimmed.match(/^\[焼きそば変更可まとめ\](.+)$/);
-                                                        const changeDishMatch = trimmed.match(/^\[変更料理:(.+?)\]\s*(.+)$/);
                                                         const isChangeNote = trimmed.startsWith("[変更可]");
                                                         const isChangeRequestNote = trimmed.startsWith("[変更希望]");
                                                         const isYakisobaNote = trimmed.startsWith("[焼きそば注意]");
@@ -1566,7 +1565,7 @@ function Step2Course({
                                                                         </span>
 
                                                                         <p className="text-[11px] font-black text-yellow-200">
-                                                                            のお料理について
+                                                                            の焼きそばについて
                                                                         </p>
                                                                     </div>
 
@@ -1584,47 +1583,31 @@ function Step2Course({
                                                             );
                                                         }
 
-                                                        if (changeDishMatch) {
-                                                            const dishName = changeDishMatch[1];
-                                                            const description = changeDishMatch[2];
-
-                                                            return (
-                                                                <div key={index} className="my-3 text-center">
-                                                                    <p className="text-sm leading-8 text-white/90">
-                                                                        {dishName}
-                                                                        <span className="ml-2 rounded-full bg-yellow-400 px-2 py-0.5 text-[10px] font-black text-black">
-                                                                            変更可
-                                                                        </span>
-                                                                    </p>
-
-                                                                    <p className="mx-auto mt-1 max-w-xl text-[11px] font-bold leading-6 text-white/55">
-                                                                        ※{description}
-                                                                    </p>
-
-                                                                    <p className="mx-auto mt-1 max-w-xl text-[11px] font-bold leading-6 text-yellow-100/70">
-                                                                        ※変更希望の場合は「ご要望・備考」欄に、変更希望商品・変更希望人数をご記入ください。
-                                                                    </p>
-                                                                </div>
-                                                            );
-                                                        }
 
                                                         if (yakisobaTasteMatch) {
-                                                            const description = yakisobaTasteMatch[1];
+                                                            const description = yakisobaTasteMatch[1].trim();
+                                                            const splitKeyword = "塩味へ変更をご希望の場合は";
+                                                            const [mainText, requestText] = description.split(splitKeyword);
 
                                                             return (
                                                                 <div
                                                                     key={index}
-                                                                    className="mx-auto my-4 max-w-xl rounded-2xl border border-orange-300/35 bg-orange-400/10 px-4 py-4 text-left"
+                                                                    className="mx-auto my-3 max-w-xl rounded-xl border border-yellow-400/15 bg-yellow-400/5 px-3 py-3 text-left"
                                                                 >
-                                                                    <div className="mb-2 flex items-center gap-2">
-                                                                        <span className="rounded-full bg-orange-300 px-3 py-1 text-[11px] font-black text-black">
-                                                                            焼きそばについて
-                                                                        </span>
-                                                                    </div>
-
-                                                                    <p className="text-xs font-bold leading-6 text-white/80">
-                                                                        {description}
+                                                                    <p className="mb-2 text-[11px] font-black text-yellow-200">
+                                                                        焼きそばについて
                                                                     </p>
+
+                                                                    <p className="text-[11px] font-bold leading-6 text-white/65">
+                                                                        {mainText.trim()}
+                                                                    </p>
+
+                                                                    {requestText && (
+                                                                        <p className="mt-2 text-[11px] font-bold leading-6 text-yellow-100/75">
+                                                                            {splitKeyword}
+                                                                            {requestText.trim()}
+                                                                        </p>
+                                                                    )}
                                                                 </div>
                                                             );
                                                         }
