@@ -1503,32 +1503,21 @@ function Step2Course({
                                                             const description = changeDishMatch[2];
 
                                                             return (
-                                                                <div
-                                                                    key={index}
-                                                                    className="mx-auto my-4 max-w-xl rounded-2xl border border-yellow-400/35 bg-yellow-400/10 px-4 py-4 text-left"
-                                                                >
-                                                                    <div className="mb-3 flex flex-wrap items-center gap-2">
-                                                                        <span className="rounded-full bg-yellow-400 px-3 py-1 text-[11px] font-black text-black">
+                                                                <div key={index} className="my-3 text-center">
+                                                                    <p className="text-sm leading-8 text-white/90">
+                                                                        {dishName}
+                                                                        <span className="ml-2 rounded-full bg-yellow-400 px-2 py-0.5 text-[10px] font-black text-black">
                                                                             変更可
                                                                         </span>
-                                                                        <p className="text-base font-black text-yellow-100">
-                                                                            {dishName}
-                                                                        </p>
-                                                                    </div>
-
-                                                                    <p className="text-xs font-bold leading-6 text-white/80">
-                                                                        {description}
                                                                     </p>
 
-                                                                    <div className="mt-3 rounded-xl border border-white/10 bg-black/20 px-3 py-3">
-                                                                        <p className="mb-1 text-[11px] font-black text-yellow-200">
-                                                                            ご記入方法
-                                                                        </p>
-                                                                        <p className="text-xs font-bold leading-6 text-white/75">
-                                                                            変更をご希望の場合は、この後の「ご要望・備考」欄に
-                                                                            「{dishName}を○名分、変更希望商品へ変更希望」とご記入ください。
-                                                                        </p>
-                                                                    </div>
+                                                                    <p className="mx-auto mt-1 max-w-xl text-[11px] font-bold leading-6 text-white/55">
+                                                                        ※{description}
+                                                                    </p>
+
+                                                                    <p className="mx-auto mt-1 max-w-xl text-[11px] font-bold leading-6 text-yellow-100/70">
+                                                                        ※変更希望の場合は「ご要望・備考」欄に、変更希望商品・変更希望人数をご記入ください。
+                                                                    </p>
                                                                 </div>
                                                             );
                                                         }
