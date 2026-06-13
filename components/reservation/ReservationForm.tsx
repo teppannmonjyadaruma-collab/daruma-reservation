@@ -514,7 +514,11 @@ function FloatingReservationSummary({
     }
 
     if (currentStep === 4 && formData.teppanPref) {
-        optionTexts.push(`席タイプのご希望：${formData.teppanPref}`);
+        const seatTypeLabel = getSeatTypeDisplayLabel(formData.teppanPref);
+
+        if (seatTypeLabel) {
+            optionTexts.push(`席タイプのご希望：${seatTypeLabel}`);
+        }
     }
 
     return createPortal(
@@ -2076,13 +2080,17 @@ function getDrinkLabel(drink: Drink) {
 }
 
 function getTeppanPrefLabel(teppanPref: TeppanPref) {
+    return getSeatTypeDisplayLabel(teppanPref);
+}
+
+function getSeatTypeDisplayLabel(teppanPref: TeppanPref) {
     switch (teppanPref) {
         case SEAT_TYPE_PREFS.ZASHIKI:
-            return SEAT_TYPE_PREFS.ZASHIKI;
+            return "座敷（鉄板有り掘りごたつ）";
         case SEAT_TYPE_PREFS.IRON_COUNTER:
-            return SEAT_TYPE_PREFS.IRON_COUNTER;
+            return "シェフ前カウンター（鉄板有り）";
         case SEAT_TYPE_PREFS.NO_IRON_COUNTER:
-            return SEAT_TYPE_PREFS.NO_IRON_COUNTER;
+            return "シェフ前カウンター（鉄板無し）";
         default:
             return "";
     }
