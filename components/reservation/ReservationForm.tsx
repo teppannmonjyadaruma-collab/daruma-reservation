@@ -326,6 +326,30 @@ function getCourseState(params: {
     };
 }
 
+function CourseDescriptionText() {
+    return (
+        <div className="text-sm font-bold leading-7 text-white/85">
+            <p className="mb-2 text-base font-black leading-7 text-[#ff0000]">
+                大人数の宴会もお任せください！
+            </p>
+
+            <p>
+                ゆったり座れる掘りごたつ席は
+                <br />
+                最大24名様まで対応可能。
+                <br />
+                カウンター席を含めると、最大34名様までの
+                <br />
+                宴会にも対応できます。
+                <br />
+                歓送迎会・打ち上げ・ご家族でのお集まりなど、
+                <br />
+                各種宴会にぜひご利用ください。
+            </p>
+        </div>
+    );
+}
+
 function buildCalendarDays(
     year: number,
     month: number,
@@ -986,8 +1010,7 @@ function Step2Course({
                 deadline: "ご利用前日22:00",
                 items: "9品",
                 guests: "2名様〜",
-                description:
-                    "後ほど差し替えます。サンプルテキスト。サンプルテキスト。サンプルテキスト。サンプルテキスト。サンプルテキスト。サンプルテキスト。",
+                description: "",
                 highlightNote:
                     "お一人様＋1,500円（税込）で90分飲み放題がお選びいただけます！",
                 detailRows: [
@@ -1047,8 +1070,7 @@ function Step2Course({
                 deadline: "ご利用前日22:00",
                 items: "10品",
                 guests: "2名様〜",
-                description:
-                    "後ほど差し替えます。サンプルテキスト。サンプルテキスト。サンプルテキスト。サンプルテキスト。サンプルテキスト。サンプルテキスト。",
+                description: "",
                 highlightNote:
                     "お一人様＋2,000円（税込）で120分飲み放題がお選びいただけます！",
                 detailRows: [
@@ -1110,8 +1132,7 @@ function Step2Course({
                 deadline: "ご利用前日22:00",
                 items: "12品",
                 guests: "2名様〜",
-                description:
-                    "後ほど差し替えます。サンプルテキスト。サンプルテキスト。サンプルテキスト。サンプルテキスト。サンプルテキスト。サンプルテキスト。",
+                description: "",
                 highlightNote:
                     "お一人様＋2,000円（税込）で120分飲み放題がお選びいただけます！",
                 detailRows: [
@@ -1303,9 +1324,15 @@ function Step2Course({
                                         </div>
                                     </div>
 
-                                    <p className="mb-3 text-sm leading-7 text-white/85">
-                                        {course.description}
-                                    </p>
+                                    <div className="mb-3">
+                                        {course.key === "席のみ" ? (
+                                            <p className="text-sm leading-7 text-white/85">
+                                                コースを指定せずにお席のみのご予約になります。
+                                            </p>
+                                        ) : (
+                                            <CourseDescriptionText />
+                                        )}
+                                    </div>
 
                                     {course.highlightNote && (
                                         <p className="mb-4 text-sm font-black leading-7 text-red-400">
@@ -1446,9 +1473,15 @@ function Step2Course({
                                             </div>
                                         )}
 
-                                        <p className="mb-5 text-sm leading-8 text-white/85">
-                                            {detailCourse.description}
-                                        </p>
+                                        <div className="mb-5">
+                                            {detailCourse.key === "席のみ" ? (
+                                                <p className="text-sm leading-8 text-white/85">
+                                                    コースを指定せずにお席のみのご予約になります。
+                                                </p>
+                                            ) : (
+                                                <CourseDescriptionText />
+                                            )}
+                                        </div>
 
                                         {detailCourse.price && (
                                             <p className="mb-5 text-xl font-black text-yellow-200">
