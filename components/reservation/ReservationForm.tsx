@@ -1984,11 +1984,11 @@ function Step3Options({
 
                                 {"note" in option && option.note && (
                                     <span
-                                        className={`mt-1 block text-[10px] font-bold leading-5 ${disabled
-                                            ? "text-white/25"
+                                        className={`mt-1 block text-[10px] font-black leading-5 ${disabled
+                                            ? "text-red-300/35"
                                             : formData.teppanPref === option.value
-                                                ? "text-black/60"
-                                                : "text-white/50"
+                                                ? "text-red-800"
+                                                : "text-red-300"
                                             }`}
                                     >
                                         {option.note}
