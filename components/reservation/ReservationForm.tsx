@@ -1825,6 +1825,7 @@ function getSeatTypeOptions(adult: number, child: number) {
                 value: SEAT_TYPE_PREFS.NO_IRON_COUNTER as TeppanPref,
                 label: "シェフ前カウンター (鉄板無し)",
                 description: "専用鉄板無しのシェフ前カウンター席です。",
+                note: "※もんじゃ等のご自身での鉄板調理メニューはご利用いただけません。",
                 selectableByGuestCount: true,
             },
         ];
@@ -1980,6 +1981,19 @@ function Step3Options({
                                 >
                                     {option.description}
                                 </span>
+
+                                {"note" in option && option.note && (
+                                    <span
+                                        className={`mt-1 block text-[10px] font-bold leading-5 ${disabled
+                                            ? "text-white/25"
+                                            : formData.teppanPref === option.value
+                                                ? "text-black/60"
+                                                : "text-white/50"
+                                            }`}
+                                    >
+                                        {option.note}
+                                    </span>
+                                )}
 
                                 <span
                                     className={`mt-2 inline-block rounded-full px-3 py-1 text-[10px] font-black ${disabled
