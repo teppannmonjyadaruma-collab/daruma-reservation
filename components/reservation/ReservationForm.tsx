@@ -81,6 +81,10 @@ const LIFF_ID = "2009798529-5aHrd2K7";
 
 const IS_RESERVATION_MAINTENANCE = true;
 
+const MAINTENANCE_BYPASS_PASSWORD = "1791";
+
+
+
 const initialFormData: ReservationFormData = {
     visitDate: "",
     visitType: "",
@@ -443,7 +447,19 @@ function StepIndicator({ currentStep }: { currentStep: Step }) {
     );
 }
 
-function ReservationMaintenanceView() {
+function ReservationMaintenanceView({
+    maintenancePassword,
+    setMaintenancePassword,
+    setIsMaintenanceBypassed,
+    maintenancePasswordError,
+    setMaintenancePasswordError,
+}: {
+    maintenancePassword: string;
+    setMaintenancePassword: React.Dispatch<React.SetStateAction<string>>;
+    setIsMaintenanceBypassed: React.Dispatch<React.SetStateAction<boolean>>;
+    maintenancePasswordError: string;
+    setMaintenancePasswordError: React.Dispatch<React.SetStateAction<string>>;
+}) {
     return (
         <div
             className="mx-auto w-full rounded-[28px] p-[1.5px] shadow-[0_12px_30px_rgba(0,0,0,0.35)]"
@@ -483,6 +499,50 @@ function ReservationMaintenanceView() {
                     <br />
                     ご理解のほどよろしくお願いいたします。
                 </p>
+
+                <div className="mt-6 w-full max-w-sm rounded-2xl border border-white/10 bg-white/5 p-4">
+                    <p className="mb-3 text-center text-xs font-bold leading-6 text-white/60">
+                        テスト確認用パスワードをお持ちの方はこちら
+                    </p>
+
+                    <input
+                        type="password"
+                        value={maintenancePassword}
+                        onChange={(e) => {
+                            setMaintenancePassword(e.target.value);
+                            setMaintenancePasswordError("");
+                        }}
+                        placeholder="パスワードを入力"
+                        className="w-full rounded-xl border border-white/20 bg-black/40 px-4 py-3 text-center text-sm font-bold text-white outline-none placeholder:text-white/30 focus:border-yellow-400"
+                    />
+
+                    {maintenancePasswordError && (
+                        <p className="mt-2 text-center text-xs font-bold text-red-400">
+                            {maintenancePasswordError}
+                        </p>
+                    )}
+
+                    <button
+                        type="button"
+                        onClick={() => {
+                            if (maintenancePassword === MAINTENANCE_BYPASS_PASSWORD) {
+                                setIsMaintenanceBypassed(true);
+                                setMaintenancePasswordError("");
+
+                                if (typeof window !== "undefined") {
+                                    window.sessionStorage.setItem("maintenanceBypassed", "true");
+                                }
+
+                                return;
+                            }
+
+                            setMaintenancePasswordError("パスワードが違います。");
+                        }}
+                        className="mt-3 w-full rounded-xl bg-yellow-400 px-4 py-3 text-sm font-black text-black transition hover:bg-yellow-300"
+                    >
+                        テスト用に予約画面へ進む
+                    </button>
+                </div>
             </div>
         </div>
     );
@@ -2480,10 +2540,6 @@ function Step5Confirm({
 }
 
 export default function ReservationForm() {
-    if (IS_RESERVATION_MAINTENANCE) {
-        return <ReservationMaintenanceView />;
-    }
-
     const [currentStep, setCurrentStep] = useState<Step>(1);
     const [formData, setFormData] = useState<ReservationFormData>(initialFormData);
     const [error, setError] = useState("");
@@ -2537,6 +2593,10 @@ export default function ReservationForm() {
     const [submitErrorOpen, setSubmitErrorOpen] = useState(false);
     const [submitErrorMessage, setSubmitErrorMessage] = useState("");
 
+    const [maintenancePassword, setMaintenancePassword] = useState("");
+    const [isMaintenanceBypassed, setIsMaintenanceBypassed] = useState(false);
+    const [maintenancePasswordError, setMaintenancePasswordError] = useState("");
+
     const [customerInfoErrors, setCustomerInfoErrors] = useState<{
         lastName: boolean;
         firstName: boolean;
@@ -2550,6 +2610,28 @@ export default function ReservationForm() {
         firstNameKana: false,
         phone: false,
     });
+
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+
+        const bypassed = window.sessionStorage.getItem("maintenanceBypassed");
+
+        if (bypassed === "true") {
+            setIsMaintenanceBypassed(true);
+        }
+    }, []);
+
+    if (IS_RESERVATION_MAINTENANCE && !isMaintenanceBypassed) {
+        return (
+            <ReservationMaintenanceView
+                maintenancePassword={maintenancePassword}
+                setMaintenancePassword={setMaintenancePassword}
+                setIsMaintenanceBypassed={setIsMaintenanceBypassed}
+                maintenancePasswordError={maintenancePasswordError}
+                setMaintenancePasswordError={setMaintenancePasswordError}
+            />
+        );
+    }
 
     useEffect(() => {
         const initLiff = async () => {
