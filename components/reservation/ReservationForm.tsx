@@ -704,6 +704,13 @@ function Step1DateGuestsTime({
 
     const hasAvailableTime = displayTimeSlots.some((slot) => slot.available);
 
+    const totalGuests = formData.adult + formData.child;
+
+    const isDinnerSingleGuestBlocked =
+        USE_TEMP_NO_NO_IRON_COUNTER_RULE &&
+        formData.visitType === "dinner" &&
+        totalGuests === 1;
+
     const calendarDays = buildCalendarDays(calendarYear, calendarMonth, calendarStatusMap);
 
     return (
@@ -929,13 +936,15 @@ function Step1DateGuestsTime({
                 {!dayAvailabilityLoading &&
                     !dayAvailabilityError &&
                     formData.visitType &&
-                    !hasAvailableTime && (
-                        <div className="mb-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-5 text-sm text-white/75">
-                            {formData.visitType === "lunch" && lunchDeadlinePassed
-                                ? "本日のランチの受付は終了しました。日付・人数・ランチ / ディナーを変更してお試しください。"
-                                : formData.visitType === "dinner" && dinnerDeadlinePassed
-                                    ? "本日のディナーの受付は終了しました。日付・人数・ランチ / ディナーを変更してお試しください。"
-                                    : "この条件で選択できる時間帯がありません。日付・人数・ランチ / ディナーを変更してお試しください。"}
+                    (isDinnerSingleGuestBlocked || !hasAvailableTime) && (
+                        <div className="mb-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-5 text-sm font-bold leading-7 text-white/75">
+                            {isDinnerSingleGuestBlocked
+                                ? "ディナー時間帯の1名様でのご予約は承っておりません。"
+                                : formData.visitType === "lunch" && lunchDeadlinePassed
+                                    ? "本日のランチの受付は終了しました。日付・人数・ランチ / ディナーを変更してお試しください。"
+                                    : formData.visitType === "dinner" && dinnerDeadlinePassed
+                                        ? "本日のディナーの受付は終了しました。日付・人数・ランチ / ディナーを変更してお試しください。"
+                                        : "この条件で選択できる時間帯がありません。日付・人数・ランチ / ディナーを変更してお試しください。"}
                         </div>
                     )}
 
@@ -943,7 +952,7 @@ function Step1DateGuestsTime({
                     <div className="rounded-2xl border border-white/10 bg-black/25 px-4 py-5 text-sm text-white/75">
                         先にランチかディナーを選択してください。
                     </div>
-                ) : dayAvailabilityLoading ? null : (
+                ) : isDinnerSingleGuestBlocked ? null : dayAvailabilityLoading ? null : (
                     <div className="relative">
                         <div className="overflow-x-auto">
                             <div className="flex min-w-max gap-2 rounded-2xl bg-black/25 p-3">
@@ -1853,13 +1862,13 @@ function getSeatTypeOptions(adult: number, child: number, visitType: VisitType) 
                     {
                         value: SEAT_TYPE_PREFS.ZASHIKI as TeppanPref,
                         label: "座敷 (鉄板有り掘りごたつ)",
-                        description: "ランチ帯は1名様でもお選びいただけます。",
+                        description: "掘りごたつ席でゆったりお過ごしいただけます。\nランチ帯は1名様でもお選びいただけます。",
                         selectableByGuestCount: true,
                     },
                     {
                         value: SEAT_TYPE_PREFS.IRON_COUNTER as TeppanPref,
                         label: "シェフ前カウンター (鉄板有り)",
-                        description: "ランチ帯は1名様でもお選びいただけます。",
+                        description: "専用鉄板付きのシェフ前カウンター席です。\nランチ帯は1名様でもお選びいただけます。",
                         selectableByGuestCount: true,
                     },
                 ];
@@ -2104,7 +2113,7 @@ function Step3Options({
                                 </span>
 
                                 <span
-                                    className={`mt-1 block text-xs font-bold leading-5 ${disabled
+                                    className={`mt-1 block whitespace-pre-line text-xs font-bold leading-5 ${disabled
                                         ? "text-white/30"
                                         : formData.teppanPref === option.value
                                             ? "text-black/70"
