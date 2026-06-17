@@ -109,6 +109,8 @@ const SEAT_TYPE_PREFS = {
     NO_IRON_COUNTER: "鉄板無(カ)",
 } as const;
 
+const USE_TEMP_NO_NO_IRON_COUNTER_RULE = true;
+
 function generateTimeRange(start: string, end: string, stepMinutes = 15): string[] {
     const toMinutes = (time: string) => {
         const [hour, minute] = time.split(":").map(Number);
@@ -1777,13 +1779,82 @@ function getSeatTypeAvailability(
     return false;
 }
 
-function getSeatTypeOptions(adult: number, child: number) {
+function getSeatTypeOptions(adult: number, child: number, visitType: VisitType) {
     const total = adult + child;
 
     if (total <= 0) {
         return [];
     }
 
+    if (USE_TEMP_NO_NO_IRON_COUNTER_RULE) {
+        if (total === 1) {
+            if (visitType === "lunch") {
+                return [
+                    {
+                        value: SEAT_TYPE_PREFS.ZASHIKI as TeppanPref,
+                        label: "座敷 (鉄板有り掘りごたつ)",
+                        description: "ランチ帯は1名様でもお選びいただけます。",
+                        selectableByGuestCount: true,
+                    },
+                    {
+                        value: SEAT_TYPE_PREFS.IRON_COUNTER as TeppanPref,
+                        label: "シェフ前カウンター (鉄板有り)",
+                        description: "ランチ帯は1名様でもお選びいただけます。",
+                        selectableByGuestCount: true,
+                    },
+                ];
+            }
+
+            return [
+                {
+                    value: SEAT_TYPE_PREFS.ZASHIKI as TeppanPref,
+                    label: "座敷 (鉄板有り掘りごたつ)",
+                    description: "ディナー時間帯の1名様予約は承っておりません。",
+                    selectableByGuestCount: false,
+                },
+                {
+                    value: SEAT_TYPE_PREFS.IRON_COUNTER as TeppanPref,
+                    label: "シェフ前カウンター (鉄板有り)",
+                    description: "ディナー時間帯の1名様予約は承っておりません。",
+                    selectableByGuestCount: false,
+                },
+            ];
+        }
+
+        if (total >= 2 && total <= 4) {
+            return [
+                {
+                    value: SEAT_TYPE_PREFS.ZASHIKI as TeppanPref,
+                    label: "座敷 (鉄板有り掘りごたつ)",
+                    description: "掘りごたつ席でゆったりお過ごしいただけます。",
+                    selectableByGuestCount: true,
+                },
+                {
+                    value: SEAT_TYPE_PREFS.IRON_COUNTER as TeppanPref,
+                    label: "シェフ前カウンター (鉄板有り)",
+                    description: "専用鉄板付きのシェフ前カウンター席です。",
+                    selectableByGuestCount: true,
+                },
+            ];
+        }
+
+        return [
+            {
+                value: SEAT_TYPE_PREFS.ZASHIKI as TeppanPref,
+                label: "座敷 (鉄板有り掘りごたつ)",
+                description: "5名様以上は座敷席へのご案内となります。",
+                selectableByGuestCount: true,
+            },
+            {
+                value: SEAT_TYPE_PREFS.IRON_COUNTER as TeppanPref,
+                label: "シェフ前カウンター (鉄板有り)",
+                description: "5名様以上はカウンター席をお選びいただけません。",
+                selectableByGuestCount: false,
+            },
+        ];
+    }
+
+    // ここから下は従来ルール
     if (total === 1) {
         return [
             {
@@ -1801,7 +1872,8 @@ function getSeatTypeOptions(adult: number, child: number) {
             {
                 value: SEAT_TYPE_PREFS.NO_IRON_COUNTER as TeppanPref,
                 label: "シェフ前カウンター (鉄板無し)",
-                description: "1名様はカウンター席へのご案内となります。",
+                description: "専用鉄板無しのシェフ前カウンター席です。",
+                note: "※もんじゃ等のご自身での鉄板調理メニューはご利用いただけません。",
                 selectableByGuestCount: true,
             },
         ];
@@ -1933,7 +2005,7 @@ function Step3Options({
                 </p>
 
                 <div className="grid gap-3">
-                    {getSeatTypeOptions(formData.adult, formData.child).map((option) => {
+                    {getSeatTypeOptions(formData.adult, formData.child, formData.visitType).map((option) => {
                         const availableBySeat = getSeatTypeAvailability(
                             formData.course,
                             option.value,
@@ -2772,6 +2844,13 @@ export default function ReservationForm() {
             if (totalGuests <= 0) return setError("人数を選択してください。");
             if (!formData.visitType) return setError("ランチかディナーを選択してください。");
             if (!formData.startTime) return setError("時間帯を選択してください。");
+            if (
+                USE_TEMP_NO_NO_IRON_COUNTER_RULE &&
+                formData.visitType === "dinner" &&
+                totalGuests === 1
+            ) {
+                return setError("ディナー時間帯の1名様でのご予約は承っておりません。");
+            }
 
             setIsPageTransitionLoading(true);
 
