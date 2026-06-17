@@ -2621,19 +2621,9 @@ export default function ReservationForm() {
         }
     }, []);
 
-    if (IS_RESERVATION_MAINTENANCE && !isMaintenanceBypassed) {
-        return (
-            <ReservationMaintenanceView
-                maintenancePassword={maintenancePassword}
-                setMaintenancePassword={setMaintenancePassword}
-                setIsMaintenanceBypassed={setIsMaintenanceBypassed}
-                maintenancePasswordError={maintenancePasswordError}
-                setMaintenancePasswordError={setMaintenancePasswordError}
-            />
-        );
-    }
-
     useEffect(() => {
+        if (IS_RESERVATION_MAINTENANCE && !isMaintenanceBypassed) return;
+
         const initLiff = async () => {
             try {
                 await liff.init({ liffId: LIFF_ID });
@@ -2654,9 +2644,11 @@ export default function ReservationForm() {
         };
 
         initLiff();
-    }, []);
+    }, [isMaintenanceBypassed]);
 
     useEffect(() => {
+        if (IS_RESERVATION_MAINTENANCE && !isMaintenanceBypassed) return;
+
         const loadCalendarStatus = async () => {
             try {
                 setCalendarStatusLoading(true);
@@ -2676,11 +2668,25 @@ export default function ReservationForm() {
         };
 
         loadCalendarStatus();
-    }, []);
+    }, [isMaintenanceBypassed]);
 
     useEffect(() => {
+        if (IS_RESERVATION_MAINTENANCE && !isMaintenanceBypassed) return;
+
         window.scrollTo({ top: 0, behavior: "smooth" });
-    }, [currentStep]);
+    }, [currentStep, isMaintenanceBypassed]);
+
+    if (IS_RESERVATION_MAINTENANCE && !isMaintenanceBypassed) {
+        return (
+            <ReservationMaintenanceView
+                maintenancePassword={maintenancePassword}
+                setMaintenancePassword={setMaintenancePassword}
+                setIsMaintenanceBypassed={setIsMaintenanceBypassed}
+                maintenancePasswordError={maintenancePasswordError}
+                setMaintenancePasswordError={setMaintenancePasswordError}
+            />
+        );
+    }
 
     const totalGuests = formData.adult + formData.child;
 
