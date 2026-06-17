@@ -939,7 +939,7 @@ function Step1DateGuestsTime({
                     (isDinnerSingleGuestBlocked || !hasAvailableTime) && (
                         <div className="mb-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-5 text-sm font-bold leading-7 text-white/75">
                             {isDinnerSingleGuestBlocked
-                                ? "ディナー時間帯の1名様でのご予約は承っておりません。2名様以上でご予約可能です。ランチ帯は1名様でもご予約いただけます。"
+                                ? "大変申し訳ありませんが、ディナー時間帯の1名様でのご予約は承っておりません。2名様以上でご予約可能です。ランチ帯は1名様でもご予約いただけます。"
                                 : formData.visitType === "lunch" && lunchDeadlinePassed
                                     ? "本日のランチの受付は終了しました。日付・人数・ランチ / ディナーを変更してお試しください。"
                                     : formData.visitType === "dinner" && dinnerDeadlinePassed
