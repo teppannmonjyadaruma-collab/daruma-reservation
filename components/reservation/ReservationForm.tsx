@@ -902,8 +902,10 @@ function Step1DateGuestsTime({
                 </div>
             </section>
 
-            <p className="mt-3 text-xs font-black leading-6 text-red-300">
-                ランチの時間帯のフードの提供はランチ限定メニューになります。
+            <p className="mt-3 text-sm font-black leading-6 text-red-300">
+                ※ランチの時間帯のフードの提供は
+                <br />
+                ランチ限定メニューになります。
             </p>
 
             <section>
