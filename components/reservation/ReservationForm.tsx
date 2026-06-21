@@ -902,7 +902,7 @@ function Step1DateGuestsTime({
                 </div>
             </section>
 
-            <p className="-mt-1 text-center text-sm font-black leading-6 text-red-300">
+            <p className="-mt-4 text-center text-sm font-black leading-6 text-red-300">
                 ※ランチの時間帯のフードの提供は
                 <br />
                 ランチ限定メニューになります。
