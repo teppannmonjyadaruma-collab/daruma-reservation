@@ -356,6 +356,56 @@ function CourseDescriptionText() {
     );
 }
 
+function SeatOnlyNoticeText() {
+    return (
+        <div className="space-y-4">
+            <p className="text-sm font-bold leading-8 text-white/85">
+                コースを指定せずにお席のみのご予約になります。
+            </p>
+
+            <div className="rounded-[22px] border border-red-500/40 bg-red-950/35 px-4 py-4 text-center shadow-[0_0_18px_rgba(220,38,38,0.16)]">
+                <p className="mb-2 text-sm font-black tracking-[0.08em] text-red-300">
+                    大切なお知らせ
+                </p>
+
+                <p className="text-lg font-black leading-8 text-yellow-200">
+                    ランチ帯は
+                    <br />
+                    <span className="text-2xl text-white">
+                        ランチ限定メニューのみ
+                    </span>
+                    <br />
+                    の提供となっております
+                </p>
+            </div>
+
+            <div className="rounded-[22px] border border-yellow-400/30 bg-black/25 px-4 py-4">
+                <p className="mb-3 text-center text-sm font-black text-yellow-200">
+                    割引キャンペーンについて
+                </p>
+
+                <p className="text-center text-sm font-bold leading-7 text-white/85">
+                    割引キャンペーンは
+                    <br />
+                    <span className="text-base font-black text-white">
+                        土日祝以外の21時までのオーダー
+                    </span>
+                    <br />
+                    に限ります。
+                </p>
+
+                <p className="mt-3 text-center text-lg font-black leading-7 text-yellow-300">
+                    土日祝は適応外となります
+                </p>
+
+                <p className="mt-3 rounded-xl bg-white/10 px-3 py-2 text-center text-xs font-black leading-5 text-red-200">
+                    ※ご注文前に必ずご確認ください
+                </p>
+            </div>
+        </div>
+    );
+}
+
 function buildCalendarDays(
     year: number,
     month: number,
@@ -1517,9 +1567,7 @@ function Step2Course({
 
                                         <div className="mb-5">
                                             {detailCourse.key === "席のみ" ? (
-                                                <p className="text-sm leading-8 text-white/85">
-                                                    コースを指定せずにお席のみのご予約になります。
-                                                </p>
+                                                <SeatOnlyNoticeText />
                                             ) : (
                                                 <CourseDescriptionText />
                                             )}
