@@ -382,7 +382,7 @@ function SeatOnlyImageCarousel({
 
             setActiveIndex(1);
             setHasAutoSlid(true);
-        }, 1000);
+        }, 2000);
 
         return () => window.clearTimeout(timer);
     }, [hasAutoSlid, images.length]);
