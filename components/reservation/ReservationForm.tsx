@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import liff from "@line/liff";
 import { fetchCalendarStatus, type CalendarStatusMap } from "@/lib/calendar-cache";
@@ -352,6 +352,98 @@ function CourseDescriptionText() {
                 <br />
                 各種宴会にぜひご利用ください。
             </p>
+        </div>
+    );
+}
+
+function SeatOnlyImageCarousel({
+    images,
+    title,
+}: {
+    images: string[];
+    title: string;
+}) {
+    const scrollRef = useRef<HTMLDivElement | null>(null);
+    const [activeIndex, setActiveIndex] = useState(0);
+    const [hasAutoSlid, setHasAutoSlid] = useState(false);
+
+    useEffect(() => {
+        if (hasAutoSlid) return;
+        if (images.length < 2) return;
+
+        const timer = window.setTimeout(() => {
+            const el = scrollRef.current;
+            if (!el) return;
+
+            el.scrollTo({
+                left: el.clientWidth,
+                behavior: "smooth",
+            });
+
+            setActiveIndex(1);
+            setHasAutoSlid(true);
+        }, 1000);
+
+        return () => window.clearTimeout(timer);
+    }, [hasAutoSlid, images.length]);
+
+    const handleScroll = () => {
+        const el = scrollRef.current;
+        if (!el) return;
+
+        const nextIndex = Math.round(el.scrollLeft / el.clientWidth);
+        setActiveIndex(nextIndex);
+        setHasAutoSlid(true);
+    };
+
+    return (
+        <div className="space-y-2">
+            <div
+                ref={scrollRef}
+                onScroll={handleScroll}
+                className="aspect-square overflow-x-auto rounded-2xl border border-white/10 bg-black/20 snap-x snap-mandatory scroll-smooth"
+            >
+                <div className="flex h-full">
+                    {images.map((src, index) => (
+                        <div
+                            key={`${title}-carousel-${index}`}
+                            className="h-full w-full shrink-0 snap-center"
+                        >
+                            <img
+                                src={src}
+                                alt={`${title} ${index + 1}`}
+                                className="h-full w-full object-cover"
+                            />
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            <div className="flex items-center justify-center gap-2">
+                {images.map((_, index) => (
+                    <button
+                        key={`${title}-dot-${index}`}
+                        type="button"
+                        onClick={() => {
+                            const el = scrollRef.current;
+                            if (!el) return;
+
+                            el.scrollTo({
+                                left: el.clientWidth * index,
+                                behavior: "smooth",
+                            });
+
+                            setActiveIndex(index);
+                            setHasAutoSlid(true);
+                        }}
+                        className={`h-2 rounded-full transition-all ${activeIndex === index
+                            ? "w-5 bg-yellow-300"
+                            : "w-2 bg-white/35"
+                            }`}
+                        aria-label={`${index + 1}枚目の画像を表示`}
+                    />
+                ))}
+            </div>
         </div>
     );
 }
@@ -1086,6 +1178,7 @@ function Step2Course({
         badge?: string;
         price?: string;
         imageSrc: string;
+        cardImages?: string[];
         detailImages: string[];
         seatTime: string;
         deadline: string;
@@ -1100,10 +1193,17 @@ function Step2Course({
                 key: "席のみ",
                 title: "お席のみのご予約",
                 imageSrc: "/reservation/seat-only-1.jpg",
+                cardImages: [
+                    "/reservation/seat-only-1.jpg",
+                    "/reservation/seat-only-4.png",
+                    "/reservation/seat-only-5.png",
+                ],
                 detailImages: [
                     "/reservation/seat-only-1.jpg",
                     "/reservation/seat-only-2.jpg",
                     "/reservation/seat-only-3.jpg",
+                    "/reservation/seat-only-4.png",
+                    "/reservation/seat-only-5.png",
                 ],
                 price: "",
                 seatTime: "昼：90分\n夜：120分",
@@ -1392,13 +1492,20 @@ function Step2Course({
                                         </p>
                                     )}
 
-                                    <div className="aspect-square overflow-hidden rounded-2xl border border-white/10 bg-black/20">
-                                        <img
-                                            src={course.imageSrc}
-                                            alt={course.title}
-                                            className="h-full w-full object-cover"
+                                    {course.key === "席のみ" ? (
+                                        <SeatOnlyImageCarousel
+                                            images={course.cardImages ?? course.detailImages}
+                                            title={course.title}
                                         />
-                                    </div>
+                                    ) : (
+                                        <div className="aspect-square overflow-hidden rounded-2xl border border-white/10 bg-black/20">
+                                            <img
+                                                src={course.imageSrc}
+                                                alt={course.title}
+                                                className="h-full w-full object-cover"
+                                            />
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="flex flex-col">
