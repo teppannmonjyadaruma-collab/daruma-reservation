@@ -401,7 +401,10 @@ function SeatOnlyImageCarousel({
             <div
                 ref={scrollRef}
                 onScroll={handleScroll}
-                className="aspect-square overflow-x-auto rounded-2xl border border-white/10 bg-black/20 snap-x snap-mandatory scroll-smooth"
+                className="aspect-square overflow-x-scroll overflow-y-hidden rounded-2xl border border-white/10 bg-black/20 snap-x snap-mandatory scroll-smooth overscroll-x-contain overscroll-y-none [touch-action:pan-x]"
+                style={{
+                    WebkitOverflowScrolling: "touch",
+                }}
             >
                 <div className="flex h-full">
                     {images.map((src, index) => (
@@ -412,7 +415,8 @@ function SeatOnlyImageCarousel({
                             <img
                                 src={src}
                                 alt={`${title} ${index + 1}`}
-                                className="h-full w-full object-cover"
+                                draggable={false}
+                                className="h-full w-full select-none object-cover"
                             />
                         </div>
                     ))}
