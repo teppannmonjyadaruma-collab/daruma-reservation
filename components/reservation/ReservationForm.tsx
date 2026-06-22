@@ -1660,20 +1660,33 @@ function Step2Course({
 
                                     <div className="max-h-[calc(92vh-88px)] overflow-y-auto px-5 py-5 md:px-7">
                                         <div className="mb-6 grid gap-4">
-                                            {detailCourse.detailImages.map((src, index) => (
-                                                <div
-                                                    key={`${detailCourse.key}-detail-image-${index}`}
-                                                    className="overflow-hidden rounded-[24px] border border-white/10 bg-black/5"
-                                                >
-                                                    <div className="aspect-[4/3] w-full overflow-hidden">
-                                                        <img
-                                                            src={src}
-                                                            alt={`${detailCourse.title} ${index + 1}`}
-                                                            className="h-full w-full object-cover"
-                                                        />
+                                            {detailCourse.detailImages.map((src, index) => {
+                                                const isSquareSeatOnlyImage =
+                                                    detailCourse.key === "席のみ" && index >= 3;
+
+                                                return (
+                                                    <div
+                                                        key={`${detailCourse.key}-detail-image-${index}`}
+                                                        className="overflow-hidden rounded-[24px] border border-white/10 bg-black/20"
+                                                    >
+                                                        <div
+                                                            className={`w-full overflow-hidden ${isSquareSeatOnlyImage
+                                                                ? "aspect-square"
+                                                                : "aspect-[4/3]"
+                                                                }`}
+                                                        >
+                                                            <img
+                                                                src={src}
+                                                                alt={`${detailCourse.title} ${index + 1}`}
+                                                                className={`h-full w-full ${isSquareSeatOnlyImage
+                                                                    ? "object-contain"
+                                                                    : "object-cover"
+                                                                    }`}
+                                                            />
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            ))}
+                                                );
+                                            })}
                                         </div>
 
                                         <div className="mb-5">
