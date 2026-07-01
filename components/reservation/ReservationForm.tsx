@@ -2744,10 +2744,8 @@ export default function ReservationForm() {
     const maxYear = maxBaseDate.getFullYear();
     const maxMonth = maxBaseDate.getMonth() + 1;
 
-    const initialCalendarYear = 2026;
-    const initialCalendarMonth = 6;
-    const [calendarYear, setCalendarYear] = useState(initialCalendarYear);
-    const [calendarMonth, setCalendarMonth] = useState(initialCalendarMonth);
+    const [calendarYear, setCalendarYear] = useState(() => new Date().getFullYear());
+    const [calendarMonth, setCalendarMonth] = useState(() => new Date().getMonth() + 1);
 
     const isAtMinMonth = calendarYear === minYear && calendarMonth === minMonth;
     const isAtMaxMonth = calendarYear === maxYear && calendarMonth === maxMonth;
