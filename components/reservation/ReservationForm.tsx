@@ -1036,14 +1036,6 @@ function Step1DateGuestsTime({
                     STEP3 ランチ / ディナーを選ぶ
                 </h2>
 
-                {isLunchSuspended && (
-                    <p className="mb-3 rounded-2xl border border-yellow-400/20 bg-yellow-500/10 px-4 py-3 text-center text-sm font-black leading-6 text-yellow-200">
-                        7月18日以降はランチ営業を休止しているため、
-                        <br />
-                        ディナーのみご予約いただけます。
-                    </p>
-                )}
-
                 <div className={`grid gap-3 ${isLunchSuspended ? "grid-cols-1" : "grid-cols-2"}`}>
                     {!isLunchSuspended && (
                         <button
