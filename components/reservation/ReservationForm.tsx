@@ -115,6 +115,14 @@ const SEAT_TYPE_PREFS = {
 
 const USE_TEMP_NO_NO_IRON_COUNTER_RULE = true;
 
+const LUNCH_SUSPEND_START_DATE = "2026-07-18";
+
+function isLunchSuspendedDate(dateString: string): boolean {
+    if (!dateString) return false;
+
+    return dateString >= LUNCH_SUSPEND_START_DATE;
+}
+
 function generateTimeRange(start: string, end: string, stepMinutes = 15): string[] {
     const toMinutes = (time: string) => {
         const [hour, minute] = time.split(":").map(Number);
@@ -857,6 +865,8 @@ function Step1DateGuestsTime({
         formData.visitType === "dinner" &&
         totalGuests === 1;
 
+    const isLunchSuspended = isLunchSuspendedDate(formData.visitDate);
+
     const calendarDays = buildCalendarDays(calendarYear, calendarMonth, calendarStatusMap);
 
     return (
@@ -1022,18 +1032,31 @@ function Step1DateGuestsTime({
             </section>
 
             <section>
-                <h2 className="mb-3 text-lg font-black text-yellow-300 md:text-xl">STEP3 ランチ / ディナーを選ぶ</h2>
-                <div className="grid grid-cols-2 gap-3">
-                    <button
-                        type="button"
-                        onClick={() => onSelectVisitType("lunch")}
-                        className={`rounded-2xl border px-4 py-4 text-base font-black transition ${formData.visitType === "lunch"
-                            ? "border-yellow-300 bg-yellow-400 text-black"
-                            : "border-white/20 bg-white/5 text-white hover:bg-white/10"
-                            }`}
-                    >
-                        ランチ
-                    </button>
+                <h2 className="mb-3 text-lg font-black text-yellow-300 md:text-xl">
+                    STEP3 ランチ / ディナーを選ぶ
+                </h2>
+
+                {isLunchSuspended && (
+                    <p className="mb-3 rounded-2xl border border-yellow-400/20 bg-yellow-500/10 px-4 py-3 text-center text-sm font-black leading-6 text-yellow-200">
+                        7月18日以降はランチ営業を休止しているため、
+                        <br />
+                        ディナーのみご予約いただけます。
+                    </p>
+                )}
+
+                <div className={`grid gap-3 ${isLunchSuspended ? "grid-cols-1" : "grid-cols-2"}`}>
+                    {!isLunchSuspended && (
+                        <button
+                            type="button"
+                            onClick={() => onSelectVisitType("lunch")}
+                            className={`rounded-2xl border px-4 py-4 text-base font-black transition ${formData.visitType === "lunch"
+                                ? "border-yellow-300 bg-yellow-400 text-black"
+                                : "border-white/20 bg-white/5 text-white hover:bg-white/10"
+                                }`}
+                        >
+                            ランチ
+                        </button>
+                    )}
 
                     <button
                         type="button"
@@ -1048,11 +1071,13 @@ function Step1DateGuestsTime({
                 </div>
             </section>
 
-            <p className="-mt-4 text-center text-sm font-black leading-6 text-red-300">
-                ※ランチの時間帯のフードの提供は
-                <br />
-                ランチ限定メニューになります。
-            </p>
+            {!isLunchSuspended && (
+                <p className="-mt-4 text-center text-sm font-black leading-6 text-red-300">
+                    ※ランチの時間帯のフードの提供は
+                    <br />
+                    ランチ限定メニューになります。
+                </p>
+            )}
 
             <section>
                 <h2 className="mb-3 text-lg font-black text-yellow-300 md:text-xl">STEP4 時間帯を選ぶ</h2>
@@ -3117,6 +3142,13 @@ export default function ReservationForm() {
             if (totalGuests <= 0) return setError("人数を選択してください。");
             if (!formData.visitType) return setError("ランチかディナーを選択してください。");
             if (!formData.startTime) return setError("時間帯を選択してください。");
+
+            if (
+                isLunchSuspendedDate(formData.visitDate) &&
+                formData.visitType === "lunch"
+            ) {
+                return setError("7月18日以降はランチ営業を休止しているため、ディナーのみご予約いただけます。");
+            }
             if (
                 USE_TEMP_NO_NO_IRON_COUNTER_RULE &&
                 formData.visitType === "dinner" &&
